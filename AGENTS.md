@@ -7,9 +7,9 @@
 ## 1. How to use this file
 
 1. **Read this file fully** before touching code.
-2. **Load context on demand** from `.agents/`. Each file is focused for a specific kind of work — don't load all of them at once, load the one(s) relevant to the task.
+2. **Load context on demand** from `.agent/`. Each file is focused for a specific kind of work — don't load all of them at once, load the one(s) relevant to the task.
 3. **Hand off explicitly.** When a task crosses a boundary (e.g., feature work → security review), say so and load the relevant file.
-4. **Stop and ask** when the task is ambiguous, when you'd be making an architectural decision, or when you'd be touching anything in `.agents/rules/dangerous-paths.md`.
+4. **Stop and ask** when the task is ambiguous, when you'd be making an architectural decision, or when you'd be touching anything in `.agent/rules/dangerous-paths.md`.
 
 ### Multi-agent convention
 
@@ -40,18 +40,18 @@ If any of these aren't accurate, fix them before continuing.
 
 ---
 
-## 3. The `.agents/` directory
+## 3. The `.agent/` directory
 
-The `.agents/` directory contains three kinds of files. Load only what's relevant to the current task.
+The `.agent/` directory contains three kinds of files. Load only what's relevant to the current task.
 
 ```
-.agents/
+.agent/
 ├── rules/        ← checklists and constraints for specific kinds of work
 ├── personas/     ← role and voice presets to adopt
 └── workflows/    ← multi-step procedures for recurring tasks
 ```
 
-### 3a. Rules (`.agents/rules/`)
+### 3a. Rules (`.agent/rules/`)
 
 Constraint files. Load when the trigger applies, then apply the checklist.
 
@@ -67,7 +67,7 @@ Constraint files. Load when the trigger applies, then apply the checklist.
 | `migrations.md`      | Any change to database schema, persisted state, or breaking API contracts.                                    |
 | `dangerous-paths.md` | **Always read at session start.** Lists files/operations that require explicit human approval.                |
 
-### 3b. Personas (`.agents/personas/`)
+### 3b. Personas (`.agent/personas/`)
 
 Role presets. Adopt when explicitly asked ("act as the lead engineer") or when the task obviously fits the role. A persona shapes _how_ you work; rules constrain _what_ you do. **Personas never override rules.**
 
@@ -76,7 +76,7 @@ Role presets. Adopt when explicitly asked ("act as the lead engineer") or when t
 | `lead-engineer.md`   | Architecture, design reviews, large refactors, technical disagreements, mentoring tone. |
 | `pair-programmer.md` | Live collaborative work where the human wants to drive and have you narrate.            |
 
-### 3c. Workflows (`.agents/workflows/`)
+### 3c. Workflows (`.agent/workflows/`)
 
 Multi-step procedures. Load at the **start** of the procedure and follow it through.
 
@@ -98,7 +98,7 @@ The default loop, regardless of which agent is driving:
 3. **Plan before coding.** A short plan beats a long apology. For non-trivial work, write the plan in chat or a scratch file first.
 4. **Implement in small, reviewable slices.** A 50-line change you understand beats a 500-line change you don't.
 5. **Run the relevant checks** (tests, types, lint, build) yourself before claiming done.
-6. **Apply `.agents/rules/dod.md`** as the final gate.
+6. **Apply `.agent/rules/dod.md`** as the final gate.
 7. **Summarize what changed and why** in the commit message and PR description.
 
 ---
@@ -108,9 +108,9 @@ The default loop, regardless of which agent is driving:
 These are not suggestions.
 
 - **Never** commit secrets, API keys, tokens, or credentials. If you see one already in the repo, stop and flag it.
-- **Never** modify files listed in `.agents/rules/dangerous-paths.md` without explicit human approval in the same session.
+- **Never** modify files listed in `.agent/rules/dangerous-paths.md` without explicit human approval in the same session.
 - **Never** disable, skip, or weaken a test to make CI pass. Fix the root cause or surface the failure.
-- **Never** introduce a new runtime dependency without checking it against `.agents/rules/architect.md` (license, maintenance, size, alternatives already in the project).
+- **Never** introduce a new runtime dependency without checking it against `.agent/rules/architect.md` (license, maintenance, size, alternatives already in the project).
 - **Never** push directly to the protected branch (typically `main` or `master`).
 - **Never** rewrite shared git history (`push --force` on shared branches, interactive rebase of pushed commits).
 - **Never** assume — verify. Read the file, run the command, check the type. Confidence without verification is the most expensive thing in this repo.
@@ -136,7 +136,7 @@ When reporting back to the human:
 
 - **Lead with the answer.** Then context, then caveats.
 - **Show what you ran.** Commands, files touched, tests that passed.
-- **Surface what you skipped or assumed.** Especially if `.agents/rules/dod.md` items aren't satisfied yet.
+- **Surface what you skipped or assumed.** Especially if `.agent/rules/dod.md` items aren't satisfied yet.
 - **Ask one question at a time** when blocked. Multi-question dumps slow everyone down.
 - **No false confidence.** "I think" and "I'm not sure" are useful signals.
 
@@ -150,8 +150,8 @@ Stop and say so. Better signals to escalate than to power through:
 - Tests pass but the behavior is wrong, or vice versa.
 - A change "shouldn't" affect something but it does.
 - You're about to do something irreversible (drop, delete, force, overwrite).
-- A file in `.agents/` contradicts this file or another `.agents/` file. **This file wins**, but flag the contradiction so it gets fixed.
+- A file in `.agent/` contradicts this file or another `.agent/` file. **This file wins**, but flag the contradiction so it gets fixed.
 
 ---
 
-_Keep this file short. If it grows past ~250 lines, something belongs in a `.agents/` subdirectory._
+_Keep this file short. If it grows past ~250 lines, something belongs in a `.agent/` subdirectory._
