@@ -1,41 +1,54 @@
-# .agents/
+# AGENTS Template
 
-Specialist context files loaded on demand by AI coding agents. The orchestration entry point is **`AGENTS.md` in the repo root** — read that first. It tells you when to load each of these.
+Welcome to your **AGENTS Template**! This repository serves as a robust, standardized starting point for setting up AI-agent-friendly developer guidelines, constraints, personas, and workflows in any new software project.
 
-## Layout
+By packaging these orchestration guidelines directly in your repository, you provide LLM-based coding assistants (such as Claude Code, Gemini, Cursor, Aider, and Antigravity) with precise, local context about your tech stack, security rules, and development lifecycle.
+
+---
+
+## 📂 Repository Structure
+
+The core orchestration system resides within the `.agent/` directory:
 
 ```
-.agents/
-├── rules/        ← checklists and constraints for specific kinds of work
-├── personas/     ← role and voice presets to adopt
-└── workflows/    ← multi-step procedures for recurring tasks
+.agent/
+├── rules/        ← Checklists and security constraints for specific scopes of work
+├── personas/     ← Role and voice presets for diverse agent pair-programming modes
+└── workflows/    ← Multi-step, sequential procedures for recurring engineering tasks
 ```
 
-Each subdirectory has its own `README.md` listing the files inside and what they're for. The authoritative routing tables — _when_ to load each file — live in `AGENTS.md`, not here.
+### 🎯 Key Entry Points
 
-## What goes where
+1. **`AGENTS.md`** (Root): The primary orchestration and routing engine. This is the single source of truth that every AI agent reads first upon entering the repository.
+2. **`CLAUDE.md` / `GEMINI.md`** (Root): Minimal, high-level pointer files configured to redirect specific agents straight to `AGENTS.md`.
 
-The three categories are deliberately different shapes. Putting a file in the wrong one is the most common failure mode of this system.
+---
 
-| Kind         | Answers…                                       | Example                                         |
-| ------------ | ---------------------------------------------- | ----------------------------------------------- |
-| **Rule**     | "What constraints apply to this kind of work?" | "Before merging auth code, check…"              |
-| **Persona**  | "What role am I playing right now?"            | "Act as the lead engineer reviewing this RFC."  |
-| **Workflow** | "What are the steps for this recurring task?"  | "Cutting a release: 1. tag, 2. changelog, 3. …" |
+## 🛠️ How to Adopt This Template
 
-If a file mixes two of these, split it. A persona that contains a checklist belongs partly in `personas/` (the voice) and partly in `rules/` (the checklist), with the persona referencing the rule.
+When bootstrapping a new project with this template, follow these adoption steps:
 
-## Adding a new file
+1. **Copy the Files**: Copy the `.agent/` directory, `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` to the root of your new project.
+2. **Update the Orientation Table**: In [`AGENTS.md`](./AGENTS.md), fill out the **Section 2: Repository Orientation** block with your new project's:
+   - One-sentence description
+   - Tech stack (language, frameworks, database)
+   - Entry points
+   - CLI commands to run, test, and build the application
+3. **Customize Dangerous Paths**: Review [`/rules/dangerous-paths.md`](./.agent/rules/dangerous-paths.md) and specify any critical file paths or operations unique to your repository that require explicit human sign-off.
+4. **Tailor Core Rules**: Refine rules like `security.md`, `migrations.md`, and `validation.md` to match your target stack's architecture.
 
-1. Decide which subdirectory (`rules/`, `personas/`, `workflows/`).
-2. Create the file there.
-3. Add a row to the matching table in `AGENTS.md` describing **when to load it**.
-4. Update the subdirectory's `README.md` if you want a longer description.
-5. Keep it focused — if it grows past ~200 lines, split it.
+---
 
-## Conventions
+## 🤝 Rules, Personas, and Workflows
 
-- These files are read by AI agents. Write for that audience: direct, structured, no marketing voice.
-- Checklists with `[ ]` boxes are intentional — agents and humans both work better with them.
-- Examples are concrete. Abstract advice without examples gets misapplied.
-- Cross-reference, don't duplicate. If you find yourself repeating something from another file, link instead.
+| Context Type | Purpose | Example File |
+| :--- | :--- | :--- |
+| **Rule** (`rules/`) | Restricts *what* the agent can and cannot do. Hard constraints. | [`dod.md`](./.agent/rules/dod.md) (Definition of Done) |
+| **Persona** (`personas/`) | Influences *how* the agent thinks, communicates, and guides. | [`lead-engineer.md`](./.agent/personas/lead-engineer.md) |
+| **Workflow** (`workflows/`) | Sequentially guides the agent through multi-stage tasks. | [`new-feature.md`](./.agent/workflows/new-feature.md) |
+
+For detailed guidance on authoring new rules, personas, or workflows, please refer to the corresponding subdirectories inside the `.agent/` folder.
+
+---
+
+_Designed to elevate human-agent pair programming to its highest potential. Maintain your standards, automate the boilerplate, and build safely._

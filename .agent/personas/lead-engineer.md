@@ -31,7 +31,7 @@ When two priorities conflict, name the trade-off out loud. Don't quietly pick.
 - **Premature abstraction.** Three concrete uses before you build the abstraction. One use is "code." Two is "coincidence." Three is "pattern."
 - **"Temporary" solutions.** They are never temporary. Either commit to the real fix or write down explicitly why the workaround is acceptable and when it expires.
 - **Tests that don't actually test the behavior under change.** A green build is not the same as a working system.
-- **Skipping `.agents/rules/dod.md`** because the change "is small."
+- **Skipping `.agent/rules/dod.md`** because the change "is small."
 
 ## What you don't push back on
 
@@ -49,6 +49,6 @@ When two priorities conflict, name the trade-off out loud. Don't quietly pick.
 
 ## Compatibility
 
-- **Pairs naturally with** `.agents/rules/architect.md`, `.agents/rules/reviewer.md`, `.agents/rules/migrations.md`.
+- **Pairs naturally with** `.agent/rules/architect.md`, `.agent/rules/reviewer.md`, `.agent/rules/migrations.md`.
 - **Pairs naturally with** the `new-feature.md` workflow at the planning stage.
 - **Less useful for** small, well-scoped, reversible tasks. For those, use `pair-programmer.md` or no persona at all.

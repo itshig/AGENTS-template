@@ -70,4 +70,4 @@ None of these are automatically wrong. All of them are worth pausing on.
 
 - **Small problem:** fix it now.
 - **Out-of-scope problem:** file it, don't bury it. A `TODO` with a ticket reference is fine. A `TODO` with no owner is not.
-- **Reveals the design is wrong:** stop. Go back to `.agents/rules/architect.md`. Don't ship a workaround for an architectural mistake — workarounds become permanent.
+- **Reveals the design is wrong:** stop. Go back to `.agent/rules/architect.md`. Don't ship a workaround for an architectural mistake — workarounds become permanent.

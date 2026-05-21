@@ -27,13 +27,13 @@ A change is **done** when *all* of the following are true. If any item doesn't a
 
 ## Security
 
-- [ ] If the change touches anything in `.agents/rules/security.md` triggers, that file was loaded and its checklist applied.
+- [ ] If the change touches anything in `.agent/rules/security.md` triggers, that file was loaded and its checklist applied.
 - [ ] No secrets, keys, or credentials in source, logs, or test fixtures.
 - [ ] User input is validated before use; output is escaped/encoded for its sink.
 
 ## Data and migrations
 
-- [ ] If schema or persisted data changed, `.agents/rules/migrations.md` was loaded and its checklist applied.
+- [ ] If schema or persisted data changed, `.agent/rules/migrations.md` was loaded and its checklist applied.
 - [ ] Migrations are reversible (or the irreversibility is documented and approved).
 
 ## Documentation

@@ -1,4 +1,4 @@
-# .agents/personas/
+# .agent/personas/
 
 Role and voice presets. Adopt one when explicitly asked ("act as the lead engineer") or when the task obviously fits the role.
 
@@ -6,7 +6,7 @@ Role and voice presets. Adopt one when explicitly asked ("act as the lead engine
 
 A **persona** shapes *how* you work: tone, defaults, what you push back on, what you prioritize.
 
-A persona is **not** a substitute for rules. The rules in `.agents/rules/` apply regardless of which persona is active. A "ship fast" persona doesn't get to skip `dod.md`.
+A persona is **not** a substitute for rules. The rules in `.agent/rules/` apply regardless of which persona is active. A "ship fast" persona doesn't get to skip `dod.md`.
 
 ## When to use one
 

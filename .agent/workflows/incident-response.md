@@ -16,7 +16,7 @@ Any of:
 
 - [ ] You have credentials to read production logs / metrics. If not, escalate immediately.
 - [ ] You know how to roll back the most recent deploy. If you don't, find out *before* doing anything else.
-- [ ] You've read `.agents/rules/dangerous-paths.md`. Many incident-response actions live there.
+- [ ] You've read `.agent/rules/dangerous-paths.md`. Many incident-response actions live there.
 
 ---
 
@@ -67,7 +67,7 @@ Scope shapes everything else: a 100% outage and a 0.1% error spike get different
 
 **Exit when:** you can name the actual cause, not just the symptom.
 
-Load `.agents/rules/debugger.md` if you're stuck. The structured loop applies in production too — actually more so, because the cost of a wrong guess is higher.
+Load `.agent/rules/debugger.md` if you're stuck. The structured loop applies in production too — actually more so, because the cost of a wrong guess is higher.
 
 Resist these tempting traps:
 
@@ -113,7 +113,7 @@ A useful post-mortem covers:
 
 - **Symptom started after a recent deploy** → roll back first, diagnose second. Almost always.
 - **Root cause unclear and bleeding has stopped** → it's OK to step back and bring in fresh eyes. Heroes get tunnel vision.
-- **Fix requires a dangerous operation** (per `.agents/rules/dangerous-paths.md`) → escalate for explicit approval, even mid-incident. Especially mid-incident.
+- **Fix requires a dangerous operation** (per `.agent/rules/dangerous-paths.md`) → escalate for explicit approval, even mid-incident. Especially mid-incident.
 - **Same incident pattern as a previous one** → that's a system failure, not a coincidence. The post-mortem must address why the previous fix didn't prevent this.
 
 ## Exit criteria
@@ -126,6 +126,6 @@ A useful post-mortem covers:
 
 ## Pairs naturally with
 
-- `.agents/rules/debugger.md` during Step 5 (root cause).
-- `.agents/rules/dangerous-paths.md` whenever production-changing actions are on the table — which is most of this workflow.
-- `.agents/personas/lead-engineer.md` for Step 8 (post-mortem) — the long-horizon view is what turns an incident into a system improvement.
+- `.agent/rules/debugger.md` during Step 5 (root cause).
+- `.agent/rules/dangerous-paths.md` whenever production-changing actions are on the table — which is most of this workflow.
+- `.agent/personas/lead-engineer.md` for Step 8 (post-mortem) — the long-horizon view is what turns an incident into a system improvement.

@@ -9,7 +9,7 @@ A new feature has been requested. You have a description, a ticket, or a paragra
 ## Prerequisites
 
 - [ ] The repo is cloned, dependencies installed, and the dev server / test suite runs locally.
-- [ ] You've read `AGENTS.md` and `.agents/rules/dangerous-paths.md`.
+- [ ] You've read `AGENTS.md` and `.agent/rules/dangerous-paths.md`.
 - [ ] You can name what "done" looks like in one sentence. If you can't, go back to the requester before writing code.
 
 ---
@@ -30,9 +30,9 @@ If the brief assumes data, structure, or behavior that doesn't exist yet, surfac
 **Exit when:** you have a plan you'd be willing to defend in a review.
 
 - Identify the files and modules the change will touch.
-- Decide whether this triggers `.agents/rules/architect.md`. If yes, load it and answer its questions before continuing.
-- Decide whether this triggers `.agents/rules/security.md`. If yes, load it; you'll apply the checklist later.
-- Decide whether this triggers `.agents/rules/migrations.md`. If yes, design the migration sequence *before* writing code.
+- Decide whether this triggers `.agent/rules/architect.md`. If yes, load it and answer its questions before continuing.
+- Decide whether this triggers `.agent/rules/security.md`. If yes, load it; you'll apply the checklist later.
+- Decide whether this triggers `.agent/rules/migrations.md`. If yes, design the migration sequence *before* writing code.
 - Sketch the slice plan: what's the smallest thing you can build, test, and verify? What's the next slice after that?
 
 Write the plan down somewhere reviewable (PR draft description, scratch file, or chat). A plan in your head is not a plan.
@@ -64,9 +64,9 @@ If a slice grows past what you planned, stop and re-slice. Don't push through.
 
 ## Step 5 — Self-review
 
-**Exit when:** you've completed every pass in `.agents/rules/reviewer.md`.
+**Exit when:** you've completed every pass in `.agent/rules/reviewer.md`.
 
-Load `.agents/rules/reviewer.md` and run it against the diff. Read the actual code, not the version in your head.
+Load `.agent/rules/reviewer.md` and run it against the diff. Read the actual code, not the version in your head.
 
 ## Step 6 — Apply rule checklists
 
@@ -74,14 +74,14 @@ Load `.agents/rules/reviewer.md` and run it against the diff. Read the actual co
 
 Based on what the change touched:
 
-- [ ] `.agents/rules/security.md` if any security trigger was hit.
-- [ ] `.agents/rules/migrations.md` if any persisted state changed.
-- [ ] `.agents/rules/docs.md` if any user-facing surface changed.
-- [ ] `.agents/rules/test-writer.md` if test coverage on the change is incomplete.
+- [ ] `.agent/rules/security.md` if any security trigger was hit.
+- [ ] `.agent/rules/migrations.md` if any persisted state changed.
+- [ ] `.agent/rules/docs.md` if any user-facing surface changed.
+- [ ] `.agent/rules/test-writer.md` if test coverage on the change is incomplete.
 
 ## Step 7 — DoD gate
 
-**Exit when:** every box in `.agents/rules/dod.md` is checked, or explicitly called out as deferred.
+**Exit when:** every box in `.agent/rules/dod.md` is checked, or explicitly called out as deferred.
 
 This is the gate. Do not skip. Do not paraphrase.
 
@@ -113,5 +113,5 @@ This is the gate. Do not skip. Do not paraphrase.
 
 ## Pairs naturally with
 
-- `.agents/personas/lead-engineer.md` during Step 2 (planning) and Step 5 (review).
-- `.agents/personas/pair-programmer.md` during Step 4 (build).
+- `.agent/personas/lead-engineer.md` during Step 2 (planning) and Step 5 (review).
+- `.agent/personas/pair-programmer.md` during Step 4 (build).

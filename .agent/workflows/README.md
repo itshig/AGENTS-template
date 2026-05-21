@@ -1,4 +1,4 @@
-# .agents/workflows/
+# .agent/workflows/
 
 Multi-step procedures for recurring tasks. Load at the **start** of the procedure and follow it through.
 

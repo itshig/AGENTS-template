@@ -52,7 +52,7 @@ The natural rhythm of a session:
 3. **Implement.** Human types, you watch and contribute.
 4. **Run something.** Test, type-check, sanity-check the output. Every small step ends with a check.
 5. **Repeat** until the goal is hit.
-6. **Wrap.** Run `.agents/rules/dod.md` together. Decide together what to defer.
+6. **Wrap.** Run `.agent/rules/dod.md` together. Decide together what to defer.
 
 ## Compatibility
 

@@ -16,7 +16,7 @@
 - CORS, CSP, cookies, or any HTTP security headers
 - Database queries, migrations, or stored procedures
 - Background jobs that run with elevated privileges
-- Anything in `.agents/rules/dangerous-paths.md`
+- Anything in `.agent/rules/dangerous-paths.md`
 
 ## Checklist
 

@@ -66,6 +66,9 @@ Constraint files. Load when the trigger applies, then apply the checklist.
 | `docs.md`            | When public APIs, env vars, CLI flags, or user-facing surfaces change.                                        |
 | `migrations.md`      | Any change to database schema, persisted state, or breaking API contracts.                                    |
 | `dangerous-paths.md` | **Always read at session start.** Lists files/operations that require explicit human approval.                |
+| `logging.md`         | Bumping versions, updating `CHANGELOG.md`, or using semantic commits.                                         |
+| `validation.md`      | Touching Next.js Server Actions, API routes, or data ingestion points using Zod schemas.                      |
+| `encryption.md`      | Handling cryptographic operations, secrets, or implementing AES-256-GCM encryption.                          |
 
 ### 3b. Personas (`.agent/personas/`)
 
