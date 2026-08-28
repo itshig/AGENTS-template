@@ -88,6 +88,7 @@ fi
 
 drift=0
 manual=0
+broken=0
 
 # --- Reporting --------------------------------------------------------------
 echo "Template-owned (--apply overwrites these):"
@@ -149,7 +150,7 @@ for f in ${SEAM_RULES[@]+"${SEAM_RULES[@]}"}; do
     echo "  + MISSING   .agents/rules/$f  (will be seeded by --init)"; drift=$((drift + 1))
   elif [[ ! -e "$dst" ]]; then
     echo "  ! BROKEN    .agents/rules/$f — dangling symlink; --apply will not overwrite it"
-    manual=$((manual + 1))
+    broken=$((broken + 1))
   elif cmp -s "$src" "$dst"; then
     echo "  ! UNFILLED  .agents/rules/$f  — identical to template; TODO seams not filled in"
     manual=$((manual + 1))
@@ -212,6 +213,7 @@ for f in ${INIT_ONLY[@]+"${INIT_ONLY[@]}"}; do
     echo "  = present   $f"
   elif [[ -L "$TARGET/$f" ]]; then
     echo "  ! BROKEN    $f — dangling symlink; --init will not overwrite it"
+    broken=$((broken + 1))
   else
     echo "  + MISSING   $f"; drift=$((drift + 1))
   fi
@@ -225,14 +227,14 @@ while IFS= read -r f; do
   [[ -f "$f" ]] || continue
   chars=$(wc -c < "$f" | tr -d ' ')
   if [[ "$chars" -gt 12000 ]]; then
-    printf "  ❌ %-30s %s — over cap, will be truncated\n" "$(basename "$f")" "$chars"
+    printf "  ❌ %-30s %s — over cap, will be truncated\n" "${f#"$TARGET/"}" "$chars"
     oversize=$((oversize + 1))
   elif [[ "$chars" -gt 10000 ]]; then
-    printf "  ⚠️  %-30s %s — approaching cap\n" "$(basename "$f")" "$chars"
+    printf "  ⚠️  %-30s %s — approaching cap\n" "${f#"$TARGET/"}" "$chars"
     near=$((near + 1))
   fi
 done < <( { [[ -e "$TARGET/AGENTS.md" ]] && echo "$TARGET/AGENTS.md"; \
-            find "$TARGET/.agents/rules" -type f -name '*.md' 2>/dev/null; } || true )
+            find "$TARGET/.agents/rules" \( -type f -o -type l \) -name '*.md' 2>/dev/null; } || true )
 if [[ $oversize -eq 0 && $near -eq 0 ]]; then
   echo "  ✅ all within cap"
 fi
@@ -245,7 +247,8 @@ case "$MODE" in
     [[ $manual -gt 0 ]] && echo "$manual seam file(s) need attention — see above. --apply will NOT touch these."
     [[ $oversize -gt 0 ]] && echo "$oversize file(s) over the 12000-char cap — trim before relying on Antigravity."
     # Non-zero when action is needed, so this can gate CI. 0 = nothing to do.
-    if [[ $drift -gt 0 || $oversize -gt 0 ]]; then exit 1; fi
+    [[ $broken -gt 0 ]] && echo "$broken file(s) are dangling symlinks — no tool can read them; --apply will not fix this."
+    if [[ $drift -gt 0 || $oversize -gt 0 || $broken -gt 0 ]]; then exit 1; fi
     exit 0
     ;;
 
