@@ -2,7 +2,18 @@
 
 A portable agent-instruction scaffold for a code repository. One entry point (`AGENTS.md`), a set of on-demand context files (`.agents/`), sub-agent definitions (`.claude/agents/`), and a sync script that keeps adopting repos from drifting.
 
-Vendor-neutral by design: `AGENTS.md` is the source of truth, and each tool-specific file (`CLAUDE.md`, `GEMINI.md`) is a thin pointer to it.
+Vendor-neutral by design: `AGENTS.md` is the source of truth, and each tool-specific file is a thin pointer to it.
+
+## Tool coverage
+
+| Tool | Reads | Provided by this template |
+| ---- | ----- | ------------------------- |
+| **Claude Code** | `CLAUDE.md`, `.claude/agents/` | `CLAUDE.md` with an `@AGENTS.md` import (Claude Code does not read `AGENTS.md` natively), plus five sub-agents. |
+| **Codex** | `AGENTS.md` natively | `AGENTS.md`. Nothing else needed. |
+| **Antigravity** | `AGENTS.md` + `GEMINI.md` natively, and `.agents/rules/` as workspace rules | All three. `GEMINI.md` is a thin pointer so it never conflicts — Antigravity gives it precedence over `AGENTS.md` on conflicts. |
+| **Cursor** | `.cursorrules`, or `.cursor/rules/*.mdc` | `.cursorrules` as a single pointer. Rule files carry `description`/`globs` frontmatter for path-based auto-attach. |
+
+**Antigravity discovers `.agents/rules/` directly**, which is why the directory is plural. A singular `.agent/` is invisible to it.
 
 Add a pointer only for a tool you actually use. A pointer for a tool nobody runs is a file that can drift with no one watching it. Adding one later is a three-line file — `.cursorrules` for Cursor, `.github/copilot-instructions.md` for Copilot, `.windsurfrules` for Windsurf — each saying only "read AGENTS.md, then load from .agents/ as it directs."
 

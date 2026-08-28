@@ -30,6 +30,19 @@ A single chokepoint means one place to audit, one place to rotate, one place to 
 - [ ] IVs come from a CSPRNG, not a counter you maintain, unless you have a documented reason.
 - [ ] The auth tag is stored and **verified on decrypt**. Decryption that ignores the tag is not authenticated encryption.
 
+### AES-256-GCM parameters
+
+If the project uses AES-256-GCM, these are not preferences — wrong values break the guarantee:
+
+| Parameter | Value | Why |
+| --------- | ----- | --- |
+| Key | **32 bytes** (256 bits) | From a KDF (`scrypt`, `pbkdf2`, `argon2`) or a high-entropy env var. |
+| IV / nonce | **12 bytes** (96 bits) | GCM's native size. Other lengths trigger an internal rehash and lose the security proof. |
+| Auth tag | **16 bytes** (128 bits) | Truncated tags weaken forgery resistance. |
+
+- [ ] IV is generated per-operation from a CSPRNG (`crypto.randomBytes(12)` or platform equivalent).
+- [ ] The tag is explicitly set before decrypting, and a bad tag raises rather than returning plaintext.
+
 ## Storage format
 
 - [ ] Ciphertext is stored as a single self-describing string or blob that includes everything needed to decrypt except the key — typically `iv:authTag:ciphertext`, base64 or hex encoded.

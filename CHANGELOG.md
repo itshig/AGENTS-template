@@ -10,7 +10,8 @@ All notable changes to this template. Adopting repos can use this to tell what t
 - Added `rules/encryption.md`, `rules/validation.md`, `rules/logging.md` — backported from downstream repos and genericized (project-specific paths and libraries replaced with `TODO when adopting` seams).
 - Added `.claude/agents/` with five sub-agent definitions: `verifier`, `reviewer`, `debugger`, `architect`, `design-reviewer`. Each is a thin wrapper over the matching rule file; none edit code.
 - Added `adopt.sh` — adoption and drift-check script. Reports by default, `--apply` syncs template-owned files, `--init` seeds a new repo. Warns on the legacy `.agent/` directory.
-- Pointer files are seeded only for tools actually in use (`CLAUDE.md`, `GEMINI.md`). Speculative pointers are not shipped — adding one later is a three-line file.
+- Pointer files are seeded for the tools actually in use: `CLAUDE.md` (Claude Code), `GEMINI.md` (Antigravity), `.cursorrules` (Cursor). Codex reads `AGENTS.md` natively and needs no pointer.
+- `adopt.sh` now checks every rules file against Antigravity's 12,000-character cap and flags files that exceed or approach it.
 - Added `VERSION` and this changelog.
 - Added `.agents/rules/README.md` index.
 
@@ -22,7 +23,8 @@ All notable changes to this template. Adopting repos can use this to tell what t
 - `AGENTS.md` §4 step 5 now points at `stack.md` rather than saying "run the relevant checks."
 
 ### Notes
-- Directory convention is `.agents/` (plural), consistent with the `.agents` Protocol draft and the `~/.agents/` global convention. Repos using the singular `.agent/` should rename; `adopt.sh` detects and flags this.
+- Directory convention is `.agents/` (plural). Beyond the `.agents` Protocol draft and the `~/.agents/` global convention, **Antigravity reads `.agents/rules/` natively as workspace rules** — a singular `.agent/` is invisible to it. Repos using the singular form should rename; `adopt.sh` detects and flags this.
+- Supersedes the abandoned `chore/standardize-agent-paths` branch (May 2026), which renamed in the opposite direction. Its concrete AES-256-GCM parameters have been merged into `rules/encryption.md`.
 - New rule files carry `description`/`globs` frontmatter for Cursor auto-attach. Pre-existing rule files do not yet — adding it is a safe follow-up, deliberately left out of this release to keep the diff reviewable.
 
 ## [0.1.0] — 2026-05-07

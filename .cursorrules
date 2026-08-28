@@ -1,0 +1,10 @@
+This project uses AGENTS.md as the single source of truth for agent instructions.
+
+Read AGENTS.md first, then load context on demand from .agents/ as its routing tables direct.
+
+Rule files in .agents/rules/ carry `description` and `globs` frontmatter so they can be
+auto-attached by path. Do not duplicate rules into this file — it exists only so Cursor
+finds the entry point.
+
+Note: Cursor's modern form is .cursor/rules/*.mdc. This file is the legacy-but-supported
+equivalent and is kept as a single pointer rather than a duplicated ruleset.

@@ -45,6 +45,7 @@ INIT_ONLY=(
   "AGENTS.md"
   "CLAUDE.md"
   "GEMINI.md"
+  ".cursorrules"
 )
 
 VERSION="$(cat "$TEMPLATE_DIR/VERSION" 2>/dev/null || echo "unknown")"
@@ -99,6 +100,22 @@ for f in "${INIT_ONLY[@]}"; do
     drift=$((drift + 1))
   fi
 done
+
+# --- Rules-file size check (Antigravity caps each at 12,000 chars) ---------
+echo
+echo "Rules-file size (Antigravity cap: 12000 chars):"
+oversize=0
+for f in "$TARGET"/AGENTS.md "$TARGET"/.agents/rules/*.md; do
+  [[ -f "$f" ]] || continue
+  chars=$(wc -c < "$f" | tr -d ' ')
+  if [[ "$chars" -gt 12000 ]]; then
+    printf "  ❌ %-32s %s — exceeds cap, will be truncated\n" "$(basename "$f")" "$chars"
+    oversize=$((oversize + 1))
+  elif [[ "$chars" -gt 10000 ]]; then
+    printf "  ⚠️  %-32s %s — approaching cap\n" "$(basename "$f")" "$chars"
+  fi
+done
+[[ $oversize -eq 0 ]] && echo "  ✅ all within cap"
 
 echo
 case "$MODE" in

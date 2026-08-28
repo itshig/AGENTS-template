@@ -175,4 +175,4 @@ Stop and say so. Better signals to escalate than to power through:
 
 ---
 
-_Keep this file short. If it grows past ~250 lines, something belongs in a `.agents/` subdirectory._
+_Keep this file short. **Antigravity caps each rules file at 12,000 characters** and silently truncates past it — that is the real limit, not a style preference. Run `adopt.sh <repo>` to check. If this file approaches the cap, move content into a `.agents/` subdirectory._
