@@ -114,11 +114,11 @@ for d in "${TEMPLATE_DIRS[@]}"; do
   # is drift nobody reads.
   dir_drift=0
   while IFS= read -r src; do
-    base="$(basename "$src")"
-    if [[ ! -e "$TARGET/$d/$base" ]]; then
-      echo "  + MISSING   $d/$base"; dir_drift=$((dir_drift + 1))
-    elif ! cmp -s "$src" "$TARGET/$d/$base"; then
-      echo "  ~ DRIFTED   $d/$base"; dir_drift=$((dir_drift + 1))
+    rel="${src#"$TEMPLATE_DIR/$d/"}"
+    if [[ ! -e "$TARGET/$d/$rel" ]]; then
+      echo "  + MISSING   $d/$rel"; dir_drift=$((dir_drift + 1))
+    elif ! cmp -s "$src" "$TARGET/$d/$rel"; then
+      echo "  ~ DRIFTED   $d/$rel"; dir_drift=$((dir_drift + 1))
     fi
   done < <(find "$TEMPLATE_DIR/$d" -type f -name '*.md')
   if [[ $dir_drift -eq 0 ]]; then
@@ -162,27 +162,50 @@ for f in "${SEAM_RULES[@]}"; do
 done
 
 unshipped=0
+report_unshipped() {
+  if [[ $unshipped -eq 0 ]]; then
+    echo
+    echo "Not shipped by the template (yours, or left over from an older version):"
+  fi
+  echo "  ? unshipped $1"
+  unshipped=$((unshipped + 1))
+}
+
+# Directories the template mirrors: anything here it does not ship is unshipped.
 for d in "${TEMPLATE_DIRS[@]}"; do
   [[ -d "$TARGET/$d" ]] || continue
   while IFS= read -r dst; do
-    base="$(basename "$dst")"
-    if [[ ! -e "$TEMPLATE_DIR/$d/$base" ]]; then
-      if [[ $unshipped -eq 0 ]]; then
-        echo
-        echo "Not shipped by the template (yours, or left over from an older version):"
-      fi
-      echo "  ? unshipped $d/$base"
-      unshipped=$((unshipped + 1))
-    fi
-  done < <(find "$TARGET/$d" -type f -name '*.md' 2>/dev/null)
+    rel="${dst#"$TARGET/$d/"}"
+    [[ -e "$TEMPLATE_DIR/$d/$rel" ]] || report_unshipped "$d/$rel"
+  done < <(find "$TARGET/$d" \( -type f -o -type l \) -name '*.md' 2>/dev/null)
 done
+
+# .agents/rules is not a mirrored directory — it holds template rules, seam
+# files, and anything the adopter authored. A leftover here matters most:
+# Antigravity loads every file in rules/ as an active rule, so a stale rule from
+# an older template version keeps being injected into every session forever.
+if [[ -d "$TARGET/.agents/rules" ]]; then
+  while IFS= read -r dst; do
+    base="$(basename "$dst")"
+    known=0
+    for k in "${TEMPLATE_RULES[@]}" "${SEAM_RULES[@]}"; do
+      [[ "$base" == "$k" ]] && { known=1; break; }
+    done
+    [[ $known -eq 1 ]] || report_unshipped ".agents/rules/${dst#"$TARGET/.agents/rules/"}"
+  done < <(find "$TARGET/.agents/rules" \( -type f -o -type l \) -name '*.md' 2>/dev/null)
+fi
+
 [[ $unshipped -gt 0 ]] && echo "  → --apply will NOT touch these. Delete by hand if they are leftovers."
 
 echo
 echo "Root files (seeded on --init only):"
 for f in "${INIT_ONLY[@]}"; do
+  # -L as well as -e: a dangling symlink is "present" as far as --init is
+  # concerned (it will not clobber it), so the report must agree with --apply.
   if [[ -e "$TARGET/$f" ]]; then
     echo "  = present   $f"
+  elif [[ -L "$TARGET/$f" ]]; then
+    echo "  ! BROKEN    $f — dangling symlink; --init will not overwrite it"
   else
     echo "  + MISSING   $f"; drift=$((drift + 1))
   fi
@@ -238,7 +261,9 @@ case "$MODE" in
       # the filesystem cannot distinguish "template dropped this" from "they
       # wrote this", and guessing wrong destroys work.
       while IFS= read -r src; do
-        dst="$TARGET/$d/$(basename "$src")"
+        rel="${src#"$TEMPLATE_DIR/$d/"}"
+        dst="$TARGET/$d/$rel"
+        mkdir -p "$(dirname "$dst")"
         rm -f "$dst"           # never write through a symlink
         cp "$src" "$dst"
       done < <(find "$TEMPLATE_DIR/$d" -type f -name '*.md')
@@ -267,10 +292,11 @@ case "$MODE" in
     if [[ "$MODE" == "--init" ]]; then
       for f in "${INIT_ONLY[@]}"; do
         [[ -e "$TEMPLATE_DIR/$f" ]] || continue
-        if [[ -e "$TARGET/$f" ]]; then
+        if [[ -e "$TARGET/$f" || -L "$TARGET/$f" ]]; then
           echo "  kept    $f (already exists)"
         else
           mkdir -p "$TARGET/$(dirname "$f")"
+          rm -f "$TARGET/$f"
           cp "$TEMPLATE_DIR/$f" "$TARGET/$f"
           echo "  seeded  $f"
         fi

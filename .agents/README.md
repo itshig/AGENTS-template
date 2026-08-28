@@ -30,7 +30,7 @@ If a file mixes two of these, split it. A persona that contains a checklist belo
 1. Decide which subdirectory (`rules/`, `personas/`, `workflows/`).
 2. Create the file there.
 3. Add a row to the matching table in `AGENTS.md` describing **when to load it**.
-4. Update the subdirectory's `README.md` if you want a longer description.
+4. Update `RULES-INDEX.md` for a rule, or the subdirectory's `README.md` for a persona or workflow.
 5. Keep it focused — if it grows past ~200 lines, split it.
 
 ## Conventions
