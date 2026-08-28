@@ -16,6 +16,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) — the same stan
 - `VERSION` and this changelog.
 
 ### Changed
+- **Directory convention is `.agents/` (plural).** Antigravity reads `.agents/rules/` as workspace rules directly. It still reads a singular `.agent/rules` as a deprecated fallback, so existing repos are not broken — but plural is the default going forward, and no other tool here looks at the singular form. `adopt.sh` detects and flags it.
 - `rules/dod.md` — added a Design section, and wired the gate to `stack.md` (for what "the checks pass" means), `validation.md`, and `encryption.md`. Every adopting repo receives this via `--apply`.
 - `CLAUDE.md` now uses an `@AGENTS.md` import instead of prose. Claude Code does not read `AGENTS.md` natively; the import is the supported bridge, and prose is not reliably acted on.
 - `GEMINI.md` reworded to match, and confirmed necessary — Antigravity reads it.
@@ -27,15 +28,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) — the same stan
 ### Removed
 - `.cursorrules` — Cursor reads `AGENTS.md` natively, so a pointer file adds nothing. Cursor's own rules format is `.mdc` files in `.cursor/rules/`, which this template does not ship.
 
-### Notes
-- **Directory convention is `.agents/` (plural).** Antigravity reads `.agents/rules/` as workspace rules directly. It still reads a singular `.agent/rules` as a deprecated fallback, so existing repos are not broken — but plural is the default going forward, and no other tool here looks at the singular form. `adopt.sh` detects and flags it.
-- Supersedes the abandoned `chore/standardize-agent-paths` branch, which renamed in the opposite direction and was the source of the singular/plural split between this template and its downstream repos. Everything unique to it was merged here before deletion:
-  - AES-256-GCM parameters (32-byte key, 12-byte IV, 16-byte tag) → `rules/encryption.md`
-  - Semantic-commit type table and Keep a Changelog section names → `rules/logging.md`
-  - `.strict()` and coercion guidance, separate body/header/query validation, webhook signature verification, and the typed failure envelope → `rules/validation.md`
+---
 
-  That branch is preserved as the tag **`archive/standardize-agent-paths`** (commit `9b1b3fd`). The tag is what makes it recoverable — the commit is otherwise unreachable and would be garbage-collected.
-- Rule files carry `description`/`globs` frontmatter. This is live for Antigravity and useful to human readers; it is inert for Cursor, which only reads `.mdc` files under `.cursor/rules/`.
+This release supersedes the abandoned `chore/standardize-agent-paths` branch, which renamed in the opposite direction and was the source of the singular/plural split between this template and its downstream repos. Everything unique to it was merged here before deletion:
+
+- AES-256-GCM parameters (32-byte key, 12-byte IV, 16-byte tag) → `rules/encryption.md`
+- Semantic-commit type table and Keep a Changelog section names → `rules/logging.md`
+- `.strict()` and coercion guidance, separate body/header/query validation, webhook signature verification, and the typed failure envelope → `rules/validation.md`
+
+That branch is preserved as the annotated tag **`archive/standardize-agent-paths`** (commit `9b1b3fd`). The tag is what makes it recoverable — the commit is otherwise unreachable and would be garbage-collected.
+
+Rule files carry `description`/`globs` frontmatter. This is live for Antigravity and useful to human readers; it is inert for Cursor, which only reads `.mdc` files under `.cursor/rules/`.
 
 ## [0.1.0] — 2026-05-07
 

@@ -42,11 +42,19 @@ If a file mixes two of these, split it. A persona that contains a checklist belo
 
 ## Staying in sync with the template
 
-These files are **template-owned**. Do not edit them in place in an adopting repo — edit them in the template and re-sync, or the drift starts again:
-
 ```sh
-/path/to/AGENTS-template/adopt.sh .            # report drift
+/path/to/AGENTS-template/adopt.sh .            # report drift, change nothing
 /path/to/AGENTS-template/adopt.sh . --apply    # pull template changes in
 ```
 
-Project-specific content belongs in the `TODO when adopting` blocks inside `AGENTS.md`, `rules/stack.md`, `rules/design.md`, and `rules/dangerous-paths.md` — those are the seams designed to hold it.
+Files here fall into three groups:
+
+**Template-owned** — `README.md`, `RULES-INDEX.md`, everything in `personas/` and `workflows/`, and the generic rules (`architect`, `debugger`, `docs`, `dod`, `migrations`, `reviewer`, `security`, `test-writer`). `--apply` overwrites these. Don't edit them here; edit the template and re-sync, or the drift starts again.
+
+**Yours** — the six rule files with `TODO when adopting` seams: `stack.md`, `design.md`, `dangerous-paths.md`, `validation.md`, `encryption.md`, `logging.md`. Once seeded, `--apply` never touches them. `--check` tells you when the template's copy has moved so you can merge by hand. Find what still needs filling in:
+
+```sh
+grep -rn 'TODO when adopting' AGENTS.md .agents/rules/
+```
+
+**Also yours** — anything you author into `rules/`, `personas/`, `workflows/`, or `.claude/agents/`. `--apply` leaves these alone and `--check` lists them as `? unshipped`, since it can't tell an adopter's file from one the template dropped in a later version. If one is a leftover, delete it by hand.

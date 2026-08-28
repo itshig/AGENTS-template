@@ -104,16 +104,27 @@ for f in "${TEMPLATE_FILES[@]}"; do
 done
 
 for d in "${TEMPLATE_DIRS[@]}"; do
-  src="$TEMPLATE_DIR/$d"; dst="$TARGET/$d"
-  [[ -e "$src" ]] || continue
-  if [[ ! -e "$dst" ]]; then
-    echo "  + MISSING   $d/"; drift=$((drift + 1))
-  elif diff -rq -x '.DS_Store' "$src" "$dst" >/dev/null 2>&1; then
+  [[ -d "$TEMPLATE_DIR/$d" ]] || continue
+  if [[ ! -d "$TARGET/$d" ]]; then
+    echo "  + MISSING   $d/"; drift=$((drift + 1)); continue
+  fi
+  # Compare only the files the template ships. Files the adopter authored in
+  # here are theirs — they are listed separately as "unshipped", never counted
+  # as drift, because --apply will not remove them and drift you cannot resolve
+  # is drift nobody reads.
+  dir_drift=0
+  while IFS= read -r src; do
+    base="$(basename "$src")"
+    if [[ ! -e "$TARGET/$d/$base" ]]; then
+      echo "  + MISSING   $d/$base"; dir_drift=$((dir_drift + 1))
+    elif ! cmp -s "$src" "$TARGET/$d/$base"; then
+      echo "  ~ DRIFTED   $d/$base"; dir_drift=$((dir_drift + 1))
+    fi
+  done < <(find "$TEMPLATE_DIR/$d" -type f -name '*.md')
+  if [[ $dir_drift -eq 0 ]]; then
     echo "  = in sync   $d/"
   else
-    echo "  ~ DRIFTED   $d/"
-    diff -rq -x '.DS_Store' "$src" "$dst" 2>/dev/null | sed 's/^/      /' || true
-    drift=$((drift + 1))
+    drift=$((drift + dir_drift))
   fi
 done
 
@@ -140,8 +151,8 @@ for f in "${SEAM_RULES[@]}"; do
     echo "  ! UNFILLED  .agents/rules/$f  — identical to template; TODO seams not filled in"
     manual=$((manual + 1))
   else
-    remaining=$(grep -c 'TODO when adopting' "$dst" 2>/dev/null || echo 0)
-    if [[ "$remaining" -gt 0 ]]; then
+    remaining=$(grep -c 'TODO when adopting' "$dst" 2>/dev/null || true)
+    if [[ "${remaining:-0}" -gt 0 ]]; then
       echo "  ~ yours     .agents/rules/$f  ($remaining TODO seam(s) still unfilled)"
       manual=$((manual + 1))
     else
@@ -149,6 +160,23 @@ for f in "${SEAM_RULES[@]}"; do
     fi
   fi
 done
+
+unshipped=0
+for d in "${TEMPLATE_DIRS[@]}"; do
+  [[ -d "$TARGET/$d" ]] || continue
+  while IFS= read -r dst; do
+    base="$(basename "$dst")"
+    if [[ ! -e "$TEMPLATE_DIR/$d/$base" ]]; then
+      if [[ $unshipped -eq 0 ]]; then
+        echo
+        echo "Not shipped by the template (yours, or left over from an older version):"
+      fi
+      echo "  ? unshipped $d/$base"
+      unshipped=$((unshipped + 1))
+    fi
+  done < <(find "$TARGET/$d" -type f -name '*.md' 2>/dev/null)
+done
+[[ $unshipped -gt 0 ]] && echo "  → --apply will NOT touch these. Delete by hand if they are leftovers."
 
 echo
 echo "Root files (seeded on --init only):"
@@ -186,6 +214,8 @@ case "$MODE" in
                        || echo "$drift template-owned item(s) out of sync — run --apply."
     [[ $manual -gt 0 ]] && echo "$manual seam file(s) need attention — see above. --apply will NOT touch these."
     [[ $oversize -gt 0 ]] && echo "$oversize file(s) over the 12000-char cap — trim before relying on Antigravity."
+    # Non-zero when action is needed, so this can gate CI. 0 = nothing to do.
+    if [[ $drift -gt 0 || $oversize -gt 0 ]]; then exit 1; fi
     exit 0
     ;;
 
@@ -193,6 +223,7 @@ case "$MODE" in
     for f in "${TEMPLATE_FILES[@]}"; do
       [[ -e "$TEMPLATE_DIR/$f" ]] || continue
       mkdir -p "$TARGET/$(dirname "$f")"
+      rm -f "$TARGET/$f"
       cp "$TEMPLATE_DIR/$f" "$TARGET/$f"
       echo "  synced  $f"
     done
@@ -200,16 +231,24 @@ case "$MODE" in
     for d in "${TEMPLATE_DIRS[@]}"; do
       [[ -e "$TEMPLATE_DIR/$d" ]] || continue
       mkdir -p "$TARGET/$d"
-      # Mirror contents, dropping files the template has removed. No --delete on
-      # the whole dir: rsync is not guaranteed present, so do it explicitly.
-      find "$TARGET/$d" -type f -name '*.md' -delete 2>/dev/null || true
-      find "$TEMPLATE_DIR/$d" -type f -name '*.md' -exec cp {} "$TARGET/$d/" \;
+      # Copy the template's files, overwriting. Deliberately NON-destructive:
+      # these directories are ones the template tells adopters to author into,
+      # so anything not shipped by the template is assumed to be theirs. Removed
+      # template files are reported by --check as "? unshipped", not deleted —
+      # the filesystem cannot distinguish "template dropped this" from "they
+      # wrote this", and guessing wrong destroys work.
+      while IFS= read -r src; do
+        dst="$TARGET/$d/$(basename "$src")"
+        rm -f "$dst"           # never write through a symlink
+        cp "$src" "$dst"
+      done < <(find "$TEMPLATE_DIR/$d" -type f -name '*.md')
       echo "  synced  $d/"
     done
 
     mkdir -p "$TARGET/.agents/rules"
     for f in "${TEMPLATE_RULES[@]}"; do
       [[ -e "$TEMPLATE_DIR/.agents/rules/$f" ]] || continue
+      rm -f "$TARGET/.agents/rules/$f"
       cp "$TEMPLATE_DIR/.agents/rules/$f" "$TARGET/.agents/rules/$f"
       echo "  synced  .agents/rules/$f"
     done

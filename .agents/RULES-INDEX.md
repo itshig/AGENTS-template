@@ -25,4 +25,4 @@ The authoritative "when to load each" table lives in [`AGENTS.md`](../AGENTS.md)
 
 ## Frontmatter
 
-Newer rule files carry `description` and `globs` frontmatter so Cursor can auto-attach them by path. It is inert for tools that don't use it. When editing an older file that lacks it, adding it is welcome.
+Newer rule files carry `description` and `globs` frontmatter. Antigravity uses it, and it tells a human reader at a glance when a rule applies. It is inert for Cursor, which reads only `.mdc` files under `.cursor/rules/` and does not scan this directory. When editing an older file that lacks it, adding it is welcome.
