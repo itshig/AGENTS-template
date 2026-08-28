@@ -91,7 +91,7 @@ manual=0
 
 # --- Reporting --------------------------------------------------------------
 echo "Template-owned (--apply overwrites these):"
-for f in "${TEMPLATE_FILES[@]}"; do
+for f in ${TEMPLATE_FILES[@]+"${TEMPLATE_FILES[@]}"}; do
   src="$TEMPLATE_DIR/$f"; dst="$TARGET/$f"
   [[ -e "$src" ]] || continue
   if [[ ! -e "$dst" ]]; then
@@ -103,7 +103,7 @@ for f in "${TEMPLATE_FILES[@]}"; do
   fi
 done
 
-for d in "${TEMPLATE_DIRS[@]}"; do
+for d in ${TEMPLATE_DIRS[@]+"${TEMPLATE_DIRS[@]}"}; do
   [[ -d "$TEMPLATE_DIR/$d" ]] || continue
   if [[ ! -d "$TARGET/$d" ]]; then
     echo "  + MISSING   $d/"; drift=$((drift + 1)); continue
@@ -128,7 +128,7 @@ for d in "${TEMPLATE_DIRS[@]}"; do
   fi
 done
 
-for f in "${TEMPLATE_RULES[@]}"; do
+for f in ${TEMPLATE_RULES[@]+"${TEMPLATE_RULES[@]}"}; do
   src="$TEMPLATE_DIR/.agents/rules/$f"; dst="$TARGET/.agents/rules/$f"
   [[ -e "$src" ]] || continue
   if [[ ! -e "$dst" ]]; then
@@ -142,11 +142,14 @@ done
 
 echo
 echo "Seam files (yours — seeded once, never overwritten):"
-for f in "${SEAM_RULES[@]}"; do
+for f in ${SEAM_RULES[@]+"${SEAM_RULES[@]}"}; do
   src="$TEMPLATE_DIR/.agents/rules/$f"; dst="$TARGET/.agents/rules/$f"
   [[ -e "$src" ]] || continue
-  if [[ ! -e "$dst" ]]; then
+  if [[ ! -e "$dst" && ! -L "$dst" ]]; then
     echo "  + MISSING   .agents/rules/$f  (will be seeded by --init)"; drift=$((drift + 1))
+  elif [[ ! -e "$dst" ]]; then
+    echo "  ! BROKEN    .agents/rules/$f — dangling symlink; --apply will not overwrite it"
+    manual=$((manual + 1))
   elif cmp -s "$src" "$dst"; then
     echo "  ! UNFILLED  .agents/rules/$f  — identical to template; TODO seams not filled in"
     manual=$((manual + 1))
@@ -172,7 +175,7 @@ report_unshipped() {
 }
 
 # Directories the template mirrors: anything here it does not ship is unshipped.
-for d in "${TEMPLATE_DIRS[@]}"; do
+for d in ${TEMPLATE_DIRS[@]+"${TEMPLATE_DIRS[@]}"}; do
   [[ -d "$TARGET/$d" ]] || continue
   while IFS= read -r dst; do
     rel="${dst#"$TARGET/$d/"}"
@@ -186,12 +189,15 @@ done
 # an older template version keeps being injected into every session forever.
 if [[ -d "$TARGET/.agents/rules" ]]; then
   while IFS= read -r dst; do
-    base="$(basename "$dst")"
+    # Match on the path relative to rules/, not the basename. A shipped rule is
+    # always top-level, so a nested archive/dod.md correctly fails to match
+    # dod.md and gets reported instead of hiding behind a name collision.
+    rel="${dst#"$TARGET/.agents/rules/"}"
     known=0
-    for k in "${TEMPLATE_RULES[@]}" "${SEAM_RULES[@]}"; do
-      [[ "$base" == "$k" ]] && { known=1; break; }
+    for k in ${TEMPLATE_RULES[@]+"${TEMPLATE_RULES[@]}"} ${SEAM_RULES[@]+"${SEAM_RULES[@]}"}; do
+      [[ "$rel" == "$k" ]] && { known=1; break; }
     done
-    [[ $known -eq 1 ]] || report_unshipped ".agents/rules/${dst#"$TARGET/.agents/rules/"}"
+    [[ $known -eq 1 ]] || report_unshipped ".agents/rules/$rel"
   done < <(find "$TARGET/.agents/rules" \( -type f -o -type l \) -name '*.md' 2>/dev/null)
 fi
 
@@ -199,7 +205,7 @@ fi
 
 echo
 echo "Root files (seeded on --init only):"
-for f in "${INIT_ONLY[@]}"; do
+for f in ${INIT_ONLY[@]+"${INIT_ONLY[@]}"}; do
   # -L as well as -e: a dangling symlink is "present" as far as --init is
   # concerned (it will not clobber it), so the report must agree with --apply.
   if [[ -e "$TARGET/$f" ]]; then
@@ -215,7 +221,7 @@ done
 echo
 echo "Rules-file size (Antigravity cap: 12000 chars per file):"
 oversize=0; near=0
-for f in "$TARGET"/AGENTS.md "$TARGET"/.agents/rules/*.md; do
+while IFS= read -r f; do
   [[ -f "$f" ]] || continue
   chars=$(wc -c < "$f" | tr -d ' ')
   if [[ "$chars" -gt 12000 ]]; then
@@ -225,7 +231,8 @@ for f in "$TARGET"/AGENTS.md "$TARGET"/.agents/rules/*.md; do
     printf "  ⚠️  %-30s %s — approaching cap\n" "$(basename "$f")" "$chars"
     near=$((near + 1))
   fi
-done
+done < <( { [[ -e "$TARGET/AGENTS.md" ]] && echo "$TARGET/AGENTS.md"; \
+            find "$TARGET/.agents/rules" -type f -name '*.md' 2>/dev/null; } || true )
 if [[ $oversize -eq 0 && $near -eq 0 ]]; then
   echo "  ✅ all within cap"
 fi
@@ -243,7 +250,7 @@ case "$MODE" in
     ;;
 
   --apply|--init)
-    for f in "${TEMPLATE_FILES[@]}"; do
+    for f in ${TEMPLATE_FILES[@]+"${TEMPLATE_FILES[@]}"}; do
       [[ -e "$TEMPLATE_DIR/$f" ]] || continue
       mkdir -p "$TARGET/$(dirname "$f")"
       rm -f "$TARGET/$f"
@@ -251,7 +258,7 @@ case "$MODE" in
       echo "  synced  $f"
     done
 
-    for d in "${TEMPLATE_DIRS[@]}"; do
+    for d in ${TEMPLATE_DIRS[@]+"${TEMPLATE_DIRS[@]}"}; do
       [[ -e "$TEMPLATE_DIR/$d" ]] || continue
       mkdir -p "$TARGET/$d"
       # Copy the template's files, overwriting. Deliberately NON-destructive:
@@ -271,26 +278,27 @@ case "$MODE" in
     done
 
     mkdir -p "$TARGET/.agents/rules"
-    for f in "${TEMPLATE_RULES[@]}"; do
+    for f in ${TEMPLATE_RULES[@]+"${TEMPLATE_RULES[@]}"}; do
       [[ -e "$TEMPLATE_DIR/.agents/rules/$f" ]] || continue
       rm -f "$TARGET/.agents/rules/$f"
       cp "$TEMPLATE_DIR/.agents/rules/$f" "$TARGET/.agents/rules/$f"
       echo "  synced  .agents/rules/$f"
     done
 
-    for f in "${SEAM_RULES[@]}"; do
+    for f in ${SEAM_RULES[@]+"${SEAM_RULES[@]}"}; do
       [[ -e "$TEMPLATE_DIR/.agents/rules/$f" ]] || continue
-      if [[ -e "$TARGET/.agents/rules/$f" ]]; then
-        cmp -s "$TEMPLATE_DIR/.agents/rules/$f" "$TARGET/.agents/rules/$f" \
+      if [[ -e "$TARGET/.agents/rules/$f" || -L "$TARGET/.agents/rules/$f" ]]; then
+        cmp -s "$TEMPLATE_DIR/.agents/rules/$f" "$TARGET/.agents/rules/$f" 2>/dev/null \
           || echo "  kept    .agents/rules/$f (yours — template differs, merge by hand if needed)"
       else
+        rm -f "$TARGET/.agents/rules/$f"
         cp "$TEMPLATE_DIR/.agents/rules/$f" "$TARGET/.agents/rules/$f"
         echo "  seeded  .agents/rules/$f"
       fi
     done
 
     if [[ "$MODE" == "--init" ]]; then
-      for f in "${INIT_ONLY[@]}"; do
+      for f in ${INIT_ONLY[@]+"${INIT_ONLY[@]}"}; do
         [[ -e "$TEMPLATE_DIR/$f" ]] || continue
         if [[ -e "$TARGET/$f" || -L "$TARGET/$f" ]]; then
           echo "  kept    $f (already exists)"
