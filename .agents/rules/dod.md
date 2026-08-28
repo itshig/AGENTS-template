@@ -14,7 +14,7 @@ A change is **done** when *all* of the following are true. If any item doesn't a
 
 - [ ] New behavior has tests that would fail without the change.
 - [ ] Bug fixes have a regression test that reproduces the original bug.
-- [ ] The full test suite passes locally. Not "should pass" — actually ran, actually green.
+- [ ] The full test suite passes locally, using the commands in `.agents/rules/stack.md`. Not "should pass" — actually ran, actually green.
 - [ ] No tests were skipped, deleted, or weakened to make CI happy.
 
 ## Code quality
@@ -29,12 +29,19 @@ A change is **done** when *all* of the following are true. If any item doesn't a
 
 - [ ] If the change touches anything in `.agents/rules/security.md` triggers, that file was loaded and its checklist applied.
 - [ ] No secrets, keys, or credentials in source, logs, or test fixtures.
-- [ ] User input is validated before use; output is escaped/encoded for its sink.
+- [ ] User input is validated before use; output is escaped/encoded for its sink. If the change parses external input, `.agents/rules/validation.md` was loaded and applied.
+- [ ] If the change encrypts data or handles key material, `.agents/rules/encryption.md` was loaded and applied.
 
 ## Data and migrations
 
 - [ ] If schema or persisted data changed, `.agents/rules/migrations.md` was loaded and its checklist applied.
 - [ ] Migrations are reversible (or the irreversibility is documented and approved).
+
+## Design
+
+- [ ] If the change renders to a screen, `.agents/rules/design.md` was loaded and its checklist applied.
+- [ ] Empty, loading, error, and overflow states are handled — not just the happy path.
+- [ ] Contrast, keyboard reach, and visible focus meet the accessibility floor.
 
 ## Documentation
 

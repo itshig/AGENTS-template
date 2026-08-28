@@ -2,8 +2,8 @@
 
 This project uses **`AGENTS.md`** as the single source of truth for agent instructions.
 
-👉 **Read [`AGENTS.md`](./AGENTS.md) first.** Then load sub-agents from `.agents/` as directed there.
+👉 **Read [`AGENTS.md`](./AGENTS.md) first**, then load context on demand from `.agents/` as its routing tables direct.
 
 ---
 
-Do not add project rules to this file. If a rule belongs to all agents, put it in `AGENTS.md`. If it belongs to a specific situation, put it in the appropriate sub-agent under `.agents/`. This file exists only so Gemini Code finds the entry point.
+Do not add project rules to this file. If a rule applies to all agents, it belongs in `AGENTS.md`. If it applies to a specific kind of work, it belongs in `.agents/rules/`. This file exists only so Gemini finds the entry point.

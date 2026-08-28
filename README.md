@@ -1,41 +1,54 @@
-# .agents/
+# AGENTS-template
 
-Specialist context files loaded on demand by AI coding agents. The orchestration entry point is **`AGENTS.md` in the repo root** — read that first. It tells you when to load each of these.
+A portable agent-instruction scaffold for a code repository. One entry point (`AGENTS.md`), a set of on-demand context files (`.agents/`), sub-agent definitions (`.claude/agents/`), and a sync script that keeps adopting repos from drifting.
+
+Vendor-neutral by design: `AGENTS.md` is the source of truth, and every tool-specific file (`CLAUDE.md`, `GEMINI.md`, `.cursorrules`, `.github/copilot-instructions.md`) is a thin pointer to it.
 
 ## Layout
 
 ```
+AGENTS.md                      ← entry point. Read first, every session.
 .agents/
-├── rules/        ← checklists and constraints for specific kinds of work
-├── personas/     ← role and voice presets to adopt
-└── workflows/    ← multi-step procedures for recurring tasks
+  rules/                       ← constraints for specific kinds of work
+  personas/                    ← role presets
+  workflows/                   ← multi-step procedures
+.claude/agents/                ← sub-agent definitions (Claude Code)
+CLAUDE.md .cursorrules …       ← thin pointers, one per tool
+adopt.sh                       ← sync / drift-check script
 ```
 
-Each subdirectory has its own `README.md` listing the files inside and what they're for. The authoritative routing tables — _when_ to load each file — live in `AGENTS.md`, not here.
+## Adopting a repo
 
-## What goes where
+From the template directory:
 
-The three categories are deliberately different shapes. Putting a file in the wrong one is the most common failure mode of this system.
+```sh
+./adopt.sh /path/to/your-repo --init
+```
 
-| Kind         | Answers…                                       | Example                                         |
-| ------------ | ---------------------------------------------- | ----------------------------------------------- |
-| **Rule**     | "What constraints apply to this kind of work?" | "Before merging auth code, check…"              |
-| **Persona**  | "What role am I playing right now?"            | "Act as the lead engineer reviewing this RFC."  |
-| **Workflow** | "What are the steps for this recurring task?"  | "Cutting a release: 1. tag, 2. changelog, 3. …" |
+That copies the rules, personas, workflows, and sub-agents, and seeds `AGENTS.md` plus the pointer files if they don't exist. It never overwrites an `AGENTS.md` you've already filled in.
 
-If a file mixes two of these, split it. A persona that contains a checklist belongs partly in `personas/` (the voice) and partly in `rules/` (the checklist), with the persona referencing the rule.
+Then fill in every `TODO when adopting` block:
 
-## Adding a new file
+- `AGENTS.md` §2 — what the project is, stack, entry points
+- `.agents/rules/stack.md` — the real commands
+- `.agents/rules/design.md` — the design source of truth
+- `.agents/rules/dangerous-paths.md` — the paths that need approval here
 
-1. Decide which subdirectory (`rules/`, `personas/`, `workflows/`).
-2. Create the file there.
-3. Add a row to the matching table in `AGENTS.md` describing **when to load it**.
-4. Update the subdirectory's `README.md` if you want a longer description.
-5. Keep it focused — if it grows past ~200 lines, split it.
+## Keeping it in sync
 
-## Conventions
+```sh
+./adopt.sh /path/to/your-repo              # report drift, change nothing
+./adopt.sh /path/to/your-repo --apply      # pull template updates in
+```
 
-- These files are read by AI agents. Write for that audience: direct, structured, no marketing voice.
-- Checklists with `[ ]` boxes are intentional — agents and humans both work better with them.
-- Examples are concrete. Abstract advice without examples gets misapplied.
-- Cross-reference, don't duplicate. If you find yourself repeating something from another file, link instead.
+`--check` is the default and is always safe. Run it across your repos periodically; drift is silent otherwise.
+
+## The convention
+
+Directory is `.agents/` (plural), matching the [.agents Protocol](https://dotagentsprotocol.com/) draft and the `~/.agents/` global convention. Note that no coding agent scans this directory natively — files load because `AGENTS.md` routes to them. The name matters for consistency and future tooling, not discovery.
+
+`CLAUDE.md` uses an `@AGENTS.md` import rather than prose, because [Claude Code does not read `AGENTS.md` natively](https://github.com/anthropics/claude-code/issues/34235) and the import is the supported bridge.
+
+## Versioning
+
+See [`VERSION`](./VERSION) and [`CHANGELOG.md`](./CHANGELOG.md). Bump on any change to template-owned files so adopting repos can tell what they're behind.

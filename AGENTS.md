@@ -49,6 +49,8 @@ The `.agents/` directory contains three kinds of files. Load only what's relevan
 ├── rules/        ← checklists and constraints for specific kinds of work
 ├── personas/     ← role and voice presets to adopt
 └── workflows/    ← multi-step procedures for recurring tasks
+
+.claude/agents/   ← sub-agent definitions (dispatched, not loaded)
 ```
 
 ### 3a. Rules (`.agents/rules/`)
@@ -57,15 +59,20 @@ Constraint files. Load when the trigger applies, then apply the checklist.
 
 | File                 | Load when…                                                                                                    |
 | -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `stack.md`           | **Always read at session start.** Canonical commands, package manager, verification sequence. Never guess a command. |
+| `dangerous-paths.md` | **Always read at session start.** Lists files/operations that require explicit human approval.               |
 | `dod.md`             | Before marking _anything_ "done" or opening a PR. **Non-negotiable gate.**                                    |
 | `security.md`        | Touching auth, sessions, payments, PII, file uploads, env vars, secrets, RBAC, or anything user-input-shaped. |
+| `validation.md`      | Forms, API handlers, server actions, data ingestion — anything parsing input it didn't create.                |
+| `encryption.md`      | Encrypting data at rest, or handling key material.                                                            |
+| `design.md`          | Anything that renders to a screen: components, layout, color, type, spacing, states.                          |
 | `architect.md`       | Proposing a new module, changing data shapes, introducing a dependency, or making a cross-cutting change.     |
 | `reviewer.md`        | After a feature is functionally complete, before commit.                                                      |
 | `test-writer.md`     | Adding tests, fixing flaky tests, or when coverage on a change is missing.                                    |
 | `debugger.md`        | When stuck on a non-obvious failure for more than ~10 minutes.                                                |
-| `docs.md`            | When public APIs, env vars, CLI flags, or user-facing surfaces change.                                        |
 | `migrations.md`      | Any change to database schema, persisted state, or breaking API contracts.                                    |
-| `dangerous-paths.md` | **Always read at session start.** Lists files/operations that require explicit human approval.                |
+| `logging.md`         | Finishing a unit of work — changelog entry and version bump.                                                  |
+| `docs.md`            | When public APIs, env vars, CLI flags, or user-facing surfaces change.                                        |
 
 ### 3b. Personas (`.agents/personas/`)
 
@@ -85,6 +92,20 @@ Multi-step procedures. Load at the **start** of the procedure and follow it thro
 | `new-feature.md`       | Starting a feature from a requirements brief, end-to-end. |
 | `incident-response.md` | Production is broken or behaving wrong.                   |
 
+### 3d. Sub-agents (`.claude/agents/`)
+
+These are **dispatched**, not loaded. Each runs in its own fresh context, does one job, and reports back. Use them when a task benefits from a clean context or an independent perspective — especially review and debugging, where the agent that wrote the code is the worst one to judge it.
+
+| Agent             | Dispatch when…                                                                 |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `verifier`        | Before claiming any change is done. Runs the `stack.md` gauntlet, reports pass/fail. |
+| `reviewer`        | Feature is functionally complete, before commit. Adversarial diff review.      |
+| `debugger`        | Stuck on a non-obvious failure, or a first fix attempt already failed.         |
+| `architect`       | A structural decision needs evaluating before implementation.                  |
+| `design-reviewer` | UI changed and needs auditing against the design system.                       |
+
+Each is a thin wrapper that loads the matching file in `.agents/rules/` — the rule remains the single source of truth. **None of them edit code.** They report; the main session acts.
+
 **Add new files** by creating them under the appropriate subdirectory and adding a row to the matching table above. Each file should be focused — if it grows past ~200 lines, split it.
 
 ---
@@ -97,7 +118,7 @@ The default loop, regardless of which agent is driving:
 2. **Identify what to load.** Which rules apply? Is there a workflow for this? Is a persona requested?
 3. **Plan before coding.** A short plan beats a long apology. For non-trivial work, write the plan in chat or a scratch file first.
 4. **Implement in small, reviewable slices.** A 50-line change you understand beats a 500-line change you don't.
-5. **Run the relevant checks** (tests, types, lint, build) yourself before claiming done.
+5. **Run the relevant checks** using the commands in `.agents/rules/stack.md` — or dispatch the `verifier` sub-agent. Do not guess a command.
 6. **Apply `.agents/rules/dod.md`** as the final gate.
 7. **Summarize what changed and why** in the commit message and PR description.
 
