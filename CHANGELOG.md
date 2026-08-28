@@ -10,7 +10,7 @@ All notable changes to this template. Adopting repos can use this to tell what t
 - Added `rules/encryption.md`, `rules/validation.md`, `rules/logging.md` — backported from downstream repos and genericized (project-specific paths and libraries replaced with `TODO when adopting` seams).
 - Added `.claude/agents/` with five sub-agent definitions: `verifier`, `reviewer`, `debugger`, `architect`, `design-reviewer`. Each is a thin wrapper over the matching rule file; none edit code.
 - Added `adopt.sh` — adoption and drift-check script. Reports by default, `--apply` syncs template-owned files, `--init` seeds a new repo. Warns on the legacy `.agent/` directory.
-- Added `.cursorrules` and `.github/copilot-instructions.md` pointer files.
+- Pointer files are seeded only for tools actually in use (`CLAUDE.md`, `GEMINI.md`). Speculative pointers are not shipped — adding one later is a three-line file.
 - Added `VERSION` and this changelog.
 - Added `.agents/rules/README.md` index.
 

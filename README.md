@@ -2,7 +2,9 @@
 
 A portable agent-instruction scaffold for a code repository. One entry point (`AGENTS.md`), a set of on-demand context files (`.agents/`), sub-agent definitions (`.claude/agents/`), and a sync script that keeps adopting repos from drifting.
 
-Vendor-neutral by design: `AGENTS.md` is the source of truth, and every tool-specific file (`CLAUDE.md`, `GEMINI.md`, `.cursorrules`, `.github/copilot-instructions.md`) is a thin pointer to it.
+Vendor-neutral by design: `AGENTS.md` is the source of truth, and each tool-specific file (`CLAUDE.md`, `GEMINI.md`) is a thin pointer to it.
+
+Add a pointer only for a tool you actually use. A pointer for a tool nobody runs is a file that can drift with no one watching it. Adding one later is a three-line file — `.cursorrules` for Cursor, `.github/copilot-instructions.md` for Copilot, `.windsurfrules` for Windsurf — each saying only "read AGENTS.md, then load from .agents/ as it directs."
 
 ## Layout
 
@@ -13,7 +15,7 @@ AGENTS.md                      ← entry point. Read first, every session.
   personas/                    ← role presets
   workflows/                   ← multi-step procedures
 .claude/agents/                ← sub-agent definitions (Claude Code)
-CLAUDE.md .cursorrules …       ← thin pointers, one per tool
+CLAUDE.md, GEMINI.md           ← thin pointers, one per tool actually in use
 adopt.sh                       ← sync / drift-check script
 ```
 

@@ -45,8 +45,6 @@ INIT_ONLY=(
   "AGENTS.md"
   "CLAUDE.md"
   "GEMINI.md"
-  ".cursorrules"
-  ".github/copilot-instructions.md"
 )
 
 VERSION="$(cat "$TEMPLATE_DIR/VERSION" 2>/dev/null || echo "unknown")"
