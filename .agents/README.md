@@ -11,7 +11,7 @@ Specialist context files loaded on demand by AI coding agents. The orchestration
 └── workflows/    ← multi-step procedures for recurring tasks
 ```
 
-Each subdirectory has its own `README.md` listing the files inside and what they're for. The authoritative routing tables — _when_ to load each file — live in `AGENTS.md`, not here.
+`RULES-INDEX.md` lists every rule file; `personas/` and `workflows/` each have their own `README.md`. The authoritative routing tables — _when_ to load each file — live in `AGENTS.md`, not here.
 
 ## What goes where
 

@@ -1,8 +1,10 @@
-# rules/
+# Rules index
+
+> This lives at `.agents/RULES-INDEX.md`, not inside `.agents/rules/` — Antigravity loads every file in `rules/` as an active rule, and an index table is not a rule.
 
 Constraint files. Each one is a checklist for a specific kind of work. Load when the trigger applies; apply the checklist before calling the work done.
 
-The authoritative "when to load each" table lives in [`AGENTS.md`](../../AGENTS.md) §3a — this file is just an index.
+The authoritative "when to load each" table lives in [`AGENTS.md`](../AGENTS.md) §3a — this file is just an index.
 
 | File | Covers |
 | ---- | ------ |

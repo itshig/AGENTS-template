@@ -2,38 +2,42 @@
 
 All notable changes to this template. Adopting repos can use this to tell what they're behind.
 
+Format follows [Keep a Changelog](https://keepachangelog.com/) — the same standard `.agents/rules/logging.md` requires of adopters.
+
 ## [0.2.0] — 2026-08-28
 
-### Features
-- Added `rules/stack.md` — canonical commands, package manager, and verification sequence. Read at session start so no agent guesses a command.
-- Added `rules/design.md` — design-system constraints: tokens, semantic color, component states, responsive behavior, accessibility floor.
-- Added `rules/encryption.md`, `rules/validation.md`, `rules/logging.md` — backported from downstream repos and genericized (project-specific paths and libraries replaced with `TODO when adopting` seams).
-- Added `.claude/agents/` with five sub-agent definitions: `verifier`, `reviewer`, `debugger`, `architect`, `design-reviewer`. Each is a thin wrapper over the matching rule file; none edit code.
-- Added `adopt.sh` — adoption and drift-check script. Reports by default, `--apply` syncs template-owned files, `--init` seeds a new repo. Warns on the legacy `.agent/` directory.
-- Pointer files are seeded for the tools actually in use: `CLAUDE.md` (Claude Code), `GEMINI.md` (Antigravity), `.cursorrules` (Cursor). Codex reads `AGENTS.md` natively and needs no pointer.
-- `adopt.sh` now checks every rules file against Antigravity's 12,000-character cap and flags files that exceed or approach it.
-- Added `VERSION` and this changelog.
-- Added `.agents/rules/README.md` index.
+### Added
+- `rules/stack.md` — canonical commands, package manager, and verification sequence. Read at session start so no agent guesses a command.
+- `rules/design.md` — design-system constraints: tokens, semantic color, component states, responsive behavior, accessibility floor.
+- `rules/encryption.md`, `rules/validation.md`, `rules/logging.md` — backported from downstream repos and genericized, with `TODO when adopting` seams in place of project-specific paths and libraries.
+- `.claude/agents/` — five sub-agents: `verifier`, `reviewer`, `debugger`, `architect`, `design-reviewer`. Each is a thin wrapper over a rule file; none can edit code.
+- `adopt.sh` — adoption and drift-check script. Reports by default; `--apply` syncs template-owned files; `--init` seeds a new repo. Detects the legacy `.agent/` directory and checks every rules file against Antigravity's 12,000-character cap.
+- `.agents/RULES-INDEX.md` — index of every rule file.
+- `VERSION` and this changelog.
 
-### Technical
-- `CLAUDE.md` now uses an `@AGENTS.md` import instead of prose instruction. Claude Code does not read `AGENTS.md` natively; the import is the supported bridge, and prose is not reliably acted on.
-- Moved the `.agents/` layout documentation from the repo root `README.md` into `.agents/README.md`, where it belongs. The root `README.md` is now an actual repo README covering adoption and sync.
-- Updated `AGENTS.md` §3a routing table with the five new rules, ordered so session-start files come first.
-- Added `AGENTS.md` §3d documenting the sub-agent roster.
-- `AGENTS.md` §4 step 5 now points at `stack.md` rather than saying "run the relevant checks."
+### Changed
+- `rules/dod.md` — added a Design section, and wired the gate to `stack.md` (for what "the checks pass" means), `validation.md`, and `encryption.md`. Every adopting repo receives this via `--apply`.
+- `CLAUDE.md` now uses an `@AGENTS.md` import instead of prose. Claude Code does not read `AGENTS.md` natively; the import is the supported bridge, and prose is not reliably acted on.
+- `GEMINI.md` reworded to match, and confirmed necessary — Antigravity reads it.
+- `AGENTS.md` §3a routing table extended with the five new rules, ordered so session-start files come first; new §3d documents the sub-agent roster; §4 step 5 now points at `stack.md`.
+- `workflows/new-feature.md` step 4 now points at `stack.md` rather than naming commands.
+- Moved the `.agents/` layout documentation from the repo root `README.md` into `.agents/README.md`. The root `README.md` is now an actual repo README covering adoption, sync, and tool coverage.
+- `.gitignore` simplified to cover `.DS_Store` recursively.
+
+### Removed
+- `.cursorrules` — Cursor reads `AGENTS.md` natively, so a pointer file adds nothing. Cursor's own rules format is `.mdc` files in `.cursor/rules/`, which this template does not ship.
 
 ### Notes
-- Directory convention is `.agents/` (plural). Beyond the `.agents` Protocol draft and the `~/.agents/` global convention, **Antigravity reads `.agents/rules/` natively as workspace rules** — a singular `.agent/` is invisible to it. Repos using the singular form should rename; `adopt.sh` detects and flags this.
-- Supersedes and replaces the abandoned `chore/standardize-agent-paths` branch (commit `9b1b3fdb5d7ca4c913337a28cf89061991eff258`, 2026-05-21), which renamed `.agents/` to `.agent/` — the opposite direction, and one that would have hidden the rules directory from Antigravity. That branch was the source of the singular/plural split between this template and the downstream repos. Everything unique to it has been merged here before deletion:
+- **Directory convention is `.agents/` (plural).** Antigravity reads `.agents/rules/` as workspace rules directly. It still reads a singular `.agent/rules` as a deprecated fallback, so existing repos are not broken — but plural is the default going forward, and no other tool here looks at the singular form. `adopt.sh` detects and flags it.
+- Supersedes the abandoned `chore/standardize-agent-paths` branch, which renamed in the opposite direction and was the source of the singular/plural split between this template and its downstream repos. Everything unique to it was merged here before deletion:
   - AES-256-GCM parameters (32-byte key, 12-byte IV, 16-byte tag) → `rules/encryption.md`
-  - Semantic-commit type table → `rules/logging.md`
-  - Keep a Changelog section names → `rules/logging.md`
+  - Semantic-commit type table and Keep a Changelog section names → `rules/logging.md`
   - `.strict()` and coercion guidance, separate body/header/query validation, webhook signature verification, and the typed failure envelope → `rules/validation.md`
 
-  The commit SHA above remains valid for recovery via `git show` for as long as the object survives GC.
-- New rule files carry `description`/`globs` frontmatter for Cursor auto-attach. Pre-existing rule files do not yet — adding it is a safe follow-up, deliberately left out of this release to keep the diff reviewable.
+  That branch is preserved as the tag **`archive/standardize-agent-paths`** (commit `9b1b3fd`). The tag is what makes it recoverable — the commit is otherwise unreachable and would be garbage-collected.
+- Rule files carry `description`/`globs` frontmatter. This is live for Antigravity and useful to human readers; it is inert for Cursor, which only reads `.mdc` files under `.cursor/rules/`.
 
 ## [0.1.0] — 2026-05-07
 
-### Features
+### Added
 - Initial framework: `AGENTS.md` entry point, `.agents/rules/` (9 files), `.agents/personas/` (2), `.agents/workflows/` (2), and `CLAUDE.md` / `GEMINI.md` pointers.

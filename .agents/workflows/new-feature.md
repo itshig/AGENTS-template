@@ -57,7 +57,7 @@ For each slice:
 
 1. Write the failing test first, *or* write a smoke check that proves the current state. ("Before this slice, X returns 404.")
 2. Implement the slice.
-3. Run the new test. Run the full suite. Run the type checker. Run the linter.
+3. Run the verification sequence from `.agents/rules/stack.md` — new test, full suite, typecheck, lint. Do not guess a command; or dispatch the `verifier` sub-agent.
 4. Commit. Small commits are cheap. Big commits are expensive to review and bisect.
 
 If a slice grows past what you planned, stop and re-slice. Don't push through.

@@ -104,7 +104,7 @@ These are **dispatched**, not loaded. Each runs in its own fresh context, does o
 | `architect`       | A structural decision needs evaluating before implementation.                  |
 | `design-reviewer` | UI changed and needs auditing against the design system.                       |
 
-Each is a thin wrapper that loads the matching file in `.agents/rules/` — the rule remains the single source of truth. **None of them edit code.** They report; the main session acts.
+Each is a thin wrapper over a rule file — `verifier` loads `stack.md`, `design-reviewer` loads `design.md`, and the rest load the rule of the same name. The rule remains the single source of truth. **None of them edit code.** They report; the main session acts.
 
 **Add new files** by creating them under the appropriate subdirectory and adding a row to the matching table above. Each file should be focused — if it grows past ~200 lines, split it.
 
@@ -175,4 +175,4 @@ Stop and say so. Better signals to escalate than to power through:
 
 ---
 
-_Keep this file short. **Antigravity caps each rules file at 12,000 characters** and silently truncates past it — that is the real limit, not a style preference. Run `adopt.sh <repo>` to check. If this file approaches the cap, move content into a `.agents/` subdirectory._
+_Keep this file short. **Antigravity caps each file in `.agents/rules/` at 12,000 characters** and truncates past it. `adopt.sh` checks this file against the same limit as a precaution, since it is loaded every session. If it approaches the cap, move content into a `.agents/` subdirectory._

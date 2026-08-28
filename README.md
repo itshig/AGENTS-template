@@ -11,9 +11,9 @@ Vendor-neutral by design: `AGENTS.md` is the source of truth, and each tool-spec
 | **Claude Code** | `CLAUDE.md`, `.claude/agents/` | `CLAUDE.md` with an `@AGENTS.md` import (Claude Code does not read `AGENTS.md` natively), plus five sub-agents. |
 | **Codex** | `AGENTS.md` natively | `AGENTS.md`. Nothing else needed. |
 | **Antigravity** | `AGENTS.md` + `GEMINI.md` natively, and `.agents/rules/` as workspace rules | All three. `GEMINI.md` is a thin pointer so it never conflicts — Antigravity gives it precedence over `AGENTS.md` on conflicts. |
-| **Cursor** | `.cursorrules`, or `.cursor/rules/*.mdc` | `.cursorrules` as a single pointer. Rule files carry `description`/`globs` frontmatter for path-based auto-attach. |
+| **Cursor** | `AGENTS.md` natively; project rules as `.mdc` files in `.cursor/rules/` | `AGENTS.md`. Nothing else needed. Cursor does not scan `.agents/rules/`, and plain `.md` files in `.cursor/rules/` are ignored — so the `description`/`globs` frontmatter on our rule files is inert for Cursor. It serves Antigravity and human readers. |
 
-**Antigravity discovers `.agents/rules/` directly**, which is why the directory is plural. A singular `.agent/` is invisible to it.
+**Antigravity discovers `.agents/rules/` directly**, which is why the directory is plural. It still reads a singular `.agent/rules` as a deprecated fallback, so existing repos aren't broken — but plural is the default going forward, and nothing else in this toolchain looks at the singular form.
 
 Add a pointer only for a tool you actually use. A pointer for a tool nobody runs is a file that can drift with no one watching it. Adding one later is a three-line file — `.cursorrules` for Cursor, `.github/copilot-instructions.md` for Copilot, `.windsurfrules` for Windsurf — each saying only "read AGENTS.md, then load from .agents/ as it directs."
 
@@ -26,7 +26,7 @@ AGENTS.md                      ← entry point. Read first, every session.
   personas/                    ← role presets
   workflows/                   ← multi-step procedures
 .claude/agents/                ← sub-agent definitions (Claude Code)
-CLAUDE.md, GEMINI.md           ← thin pointers, one per tool actually in use
+CLAUDE.md, GEMINI.md           ← thin pointers (Codex and Cursor read AGENTS.md directly)
 adopt.sh                       ← sync / drift-check script
 ```
 
@@ -42,10 +42,19 @@ That copies the rules, personas, workflows, and sub-agents, and seeds `AGENTS.md
 
 Then fill in every `TODO when adopting` block:
 
+```sh
+grep -rn 'TODO when adopting' AGENTS.md .agents/rules/
+```
+
 - `AGENTS.md` §2 — what the project is, stack, entry points
 - `.agents/rules/stack.md` — the real commands
 - `.agents/rules/design.md` — the design source of truth
 - `.agents/rules/dangerous-paths.md` — the paths that need approval here
+- `.agents/rules/validation.md` — the validation library and failure envelope
+- `.agents/rules/encryption.md` — whether encryption is implemented, and where
+- `.agents/rules/logging.md` — which manifest carries the version
+
+These six rule files are **yours** once seeded. `--apply` never overwrites them; it reports when the template's copy has moved so you can merge by hand.
 
 ## Keeping it in sync
 
@@ -58,7 +67,7 @@ Then fill in every `TODO when adopting` block:
 
 ## The convention
 
-Directory is `.agents/` (plural), matching the [.agents Protocol](https://dotagentsprotocol.com/) draft and the `~/.agents/` global convention. Note that no coding agent scans this directory natively — files load because `AGENTS.md` routes to them. The name matters for consistency and future tooling, not discovery.
+Directory is `.agents/` (plural). Antigravity reads `.agents/rules/` as workspace rules directly; for Claude Code and Codex the files load because `AGENTS.md` routes to them. The plural name also lines up with the `~/.agents/` global convention and the [.agents Protocol](https://dotagentsprotocol.com/) draft — though note that draft specifies a different internal layout (`skills/`, `agents/`, `tasks/`, `memories/`), so only the directory name is shared.
 
 `CLAUDE.md` uses an `@AGENTS.md` import rather than prose, because [Claude Code does not read `AGENTS.md` natively](https://github.com/anthropics/claude-code/issues/34235) and the import is the supported bridge.
 
