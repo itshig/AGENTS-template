@@ -22,6 +22,8 @@ An external API's response is untrusted input. It changed shape without telling 
 - [ ] Reusable schemas live in one shared location; single-use schemas are co-located with their consumer.
 - [ ] Error messages are written for humans — they surface in the UI. `"Invalid input"` helps nobody.
 - [ ] The schema is the **single source of truth for the type**. Infer the type from the schema; never declare both by hand and let them drift.
+- [ ] **Reject unknown keys explicitly** where extra fields would be a bug (`.strict()` or the equivalent). Silently dropping unexpected input hides integration breakage.
+- [ ] **Coercion is used deliberately, not reflexively.** Coerced dates and numbers must still be range-checked — a coerced value is well-typed, not sensible. `"1e999"` coerces to a number just fine.
 
 ## The parse pattern
 
@@ -36,9 +38,11 @@ That last point is the one that actually bites people. Pass the parsed result fo
 
 ## Boundaries that need it
 
-- [ ] Every API route / server action / form handler validates its input before touching business logic.
+- [ ] Every API route / server action / form handler validates its input before touching business logic. **Anything reachable over the network is a public endpoint**, including framework-level actions that look like local function calls.
+- [ ] **Body, headers, and query/path parameters are validated separately.** They arrive from different places and have different shapes.
 - [ ] Every database write with user-supplied data has passed validation first.
 - [ ] Every third-party API response is parsed before its fields are read.
+- [ ] **Webhooks verify the signature *and* validate the payload.** A valid signature proves the sender, not the shape. Both, or neither is worth much.
 - [ ] Environment variables are validated at startup, so a missing var fails immediately and loudly rather than as `undefined` three layers deep at 2am.
 
 ## Aligning with the persistence layer
@@ -47,6 +51,21 @@ That last point is the one that actually bites people. Pass the parsed result fo
 - [ ] Strings that must not be blank are explicitly constrained — an empty string passes a naive "is a string" check.
 - [ ] Field lengths match the column limits. Validation that permits 500 characters into a `varchar(255)` moves the error from the form to the database.
 - [ ] Enums in the schema match the enum in the database. Both change together or neither does.
+
+## Failure response shape
+
+Validation failures should return a consistent, typed envelope so callers handle them uniformly and errors can map back to individual fields in the UI. Something in this shape:
+
+```ts
+type ActionResponse<T> =
+  | { success: true; data: T }
+  | { success: false; errors: Record<string, string[]>; message: string };
+```
+
+> **TODO when adopting:** replace with this project's actual envelope, or note that it uses HTTP status codes plus a problem-details body.
+
+- [ ] Field-level errors map to field names the client can key on.
+- [ ] API routes reject with `400` and a structured error payload, not a bare 500.
 
 ## Client and server
 

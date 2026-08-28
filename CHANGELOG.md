@@ -24,7 +24,13 @@ All notable changes to this template. Adopting repos can use this to tell what t
 
 ### Notes
 - Directory convention is `.agents/` (plural). Beyond the `.agents` Protocol draft and the `~/.agents/` global convention, **Antigravity reads `.agents/rules/` natively as workspace rules** — a singular `.agent/` is invisible to it. Repos using the singular form should rename; `adopt.sh` detects and flags this.
-- Supersedes the abandoned `chore/standardize-agent-paths` branch (May 2026), which renamed in the opposite direction. Its concrete AES-256-GCM parameters have been merged into `rules/encryption.md`.
+- Supersedes and replaces the abandoned `chore/standardize-agent-paths` branch (commit `9b1b3fdb5d7ca4c913337a28cf89061991eff258`, 2026-05-21), which renamed `.agents/` to `.agent/` — the opposite direction, and one that would have hidden the rules directory from Antigravity. That branch was the source of the singular/plural split between this template and the downstream repos. Everything unique to it has been merged here before deletion:
+  - AES-256-GCM parameters (32-byte key, 12-byte IV, 16-byte tag) → `rules/encryption.md`
+  - Semantic-commit type table → `rules/logging.md`
+  - Keep a Changelog section names → `rules/logging.md`
+  - `.strict()` and coercion guidance, separate body/header/query validation, webhook signature verification, and the typed failure envelope → `rules/validation.md`
+
+  The commit SHA above remains valid for recovery via `git show` for as long as the object survives GC.
 - New rule files carry `description`/`globs` frontmatter for Cursor auto-attach. Pre-existing rule files do not yet — adding it is a safe follow-up, deliberately left out of this release to keep the diff reviewable.
 
 ## [0.1.0] — 2026-05-07
