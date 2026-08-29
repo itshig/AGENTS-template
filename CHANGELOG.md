@@ -4,6 +4,11 @@ All notable changes to this template. Adopting repos can use this to tell what t
 
 Format follows [Keep a Changelog](https://keepachangelog.com/) — the same standard `.agents/rules/logging.md` requires of adopters.
 
+## [0.3.1] — 2026-08-29
+
+### Added
+- `ADOPTING.md` — the end-to-end runbook for adopting the template into a repo and for syncing an already-adopted one. Covers the survey step, what belongs in each of the six seam files and where to find those facts, the `.gitignore` negation that sub-agents and their memory need, verification, and a list of eight traps that have each actually occurred during a real adoption. Linked from `README.md`. Template-repo documentation only — it is not copied into adopting repos.
+
 ## [0.3.0] — 2026-08-29
 
 ### Added

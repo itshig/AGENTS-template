@@ -33,6 +33,9 @@ adopt.sh                       ← sync / drift-check script
 
 ## Adopting a repo
 
+> **Doing this yourself? Read [`ADOPTING.md`](./ADOPTING.md).** It is the full runbook: survey, seam-filling, the `.gitignore` trap, verification, and the list of traps that have actually bitten. This section is the short version.
+
+
 From the template directory:
 
 ```sh
