@@ -221,7 +221,7 @@ done
 
 # --- Rules-file size check (Antigravity caps each at 12,000 chars) ----------
 echo
-echo "Rules-file size (Antigravity cap: 12000 chars per file):"
+echo "Rules-file size (Antigravity cap: 12000 bytes per file):"
 oversize=0; near=0
 while IFS= read -r f; do
   [[ -f "$f" ]] || continue
@@ -229,7 +229,7 @@ while IFS= read -r f; do
   if [[ "$chars" -gt 12000 ]]; then
     printf "  ❌ %-30s %s — over cap, will be truncated\n" "${f#"$TARGET/"}" "$chars"
     oversize=$((oversize + 1))
-  elif [[ "$chars" -gt 10000 ]]; then
+  elif [[ "$chars" -gt 11000 ]]; then
     printf "  ⚠️  %-30s %s — approaching cap\n" "${f#"$TARGET/"}" "$chars"
     near=$((near + 1))
   fi

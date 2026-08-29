@@ -4,6 +4,17 @@ All notable changes to this template. Adopting repos can use this to tell what t
 
 Format follows [Keep a Changelog](https://keepachangelog.com/) — the same standard `.agents/rules/logging.md` requires of adopters.
 
+## [0.2.1] — 2026-08-28
+
+### Changed
+- `AGENTS.md` trimmed from 10,905 to ~9,600 bytes. It loads every session and is checked against Antigravity's 12,000-byte cap, which truncates silently — the previous size left an adopting repo at ~95% of the cap once section 2 was filled in. Sections 6 and 7 merged into one section of pointers at `reviewer.md` and `design.md` rather than restating them; the routing-table cells and the `.agents/` layout diagram were compressed (the diagram is verbatim in `.agents/README.md`). Every routing row and trigger is preserved.
+- `adopt.sh` "approaching cap" threshold raised from 10,000 to 11,000 bytes. At 10,000 it fired on every correct adoption, which is the same noise problem as unresolvable drift — a warning that always fires is a warning nobody reads. The 12,000 hard cap is unchanged.
+- `adopt.sh` size header now says "bytes" rather than "chars". The check uses `wc -c`, and multi-byte characters make the two differ; bytes is the conservative reading.
+
+### Fixed
+- `AGENTS.md` §1 told adopters to create `.cursorrules` and `.github/copilot-instructions.md` as pointer files. Both were removed in 0.2.0 — Codex and Cursor read `AGENTS.md` directly. The instruction now names only the pointers the template actually ships.
+- Section numbering skipped 7 after the merge; renumbered.
+
 ## [0.2.0] — 2026-08-28
 
 ### Added

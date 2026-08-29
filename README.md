@@ -15,7 +15,7 @@ Vendor-neutral by design: `AGENTS.md` is the source of truth, and each tool-spec
 
 **Antigravity discovers `.agents/rules/` directly**, which is why the directory is plural. It still reads a singular `.agent/rules` as a deprecated fallback, so existing repos aren't broken — but plural is the default going forward, and nothing else in this toolchain looks at the singular form.
 
-Add a pointer only for a tool you actually use. A pointer for a tool nobody runs is a file that can drift with no one watching it. Adding one later is a three-line file — `.cursorrules` for Cursor, `.github/copilot-instructions.md` for Copilot, `.windsurfrules` for Windsurf — each saying only "read AGENTS.md, then load from .agents/ as it directs."
+Add a pointer only for a tool that actually needs one. Codex and Cursor read `AGENTS.md` directly, so a pointer for them is a file that drifts with nobody watching it. For a tool that does not — check its docs rather than assuming — the pointer is three lines in whatever file it does read, saying only "read AGENTS.md, then load from .agents/ as it directs."
 
 ## Layout
 
