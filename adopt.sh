@@ -38,6 +38,7 @@ fi
 # Directories the template owns wholesale. Overwritten by --apply.
 TEMPLATE_FILES=(
   ".agents/README.md"
+  ".claude/agent-memory/README.md"
   ".agents/RULES-INDEX.md"
 )
 
@@ -237,6 +238,36 @@ done < <( { [[ -e "$TARGET/AGENTS.md" ]] && echo "$TARGET/AGENTS.md"; \
             find "$TARGET/.agents/rules" \( -type f -o -type l \) -name '*.md' 2>/dev/null; } || true )
 if [[ $oversize -eq 0 && $near -eq 0 ]]; then
   echo "  ✅ all within cap"
+fi
+
+# --- Sub-agent memory size check (Claude Code injects 200 lines / 25KB) -----
+# Reports only; never changes the exit code. An over-budget MEMORY.md is the
+# agent's own housekeeping to fix by curating, not an adoption failure.
+mem_root="$TARGET/.claude/agent-memory"
+if [[ -d "$mem_root" ]]; then
+  echo
+  echo "Sub-agent memory (Claude Code injects first 200 lines or 25600 bytes):"
+  mem_over=0 mem_found=0
+  while IFS= read -r f; do
+    [[ -f "$f" ]] || continue
+    mem_found=$((mem_found + 1))
+    mbytes=$(wc -c < "$f" | tr -d ' ')
+    mlines=$(wc -l < "$f" | tr -d ' ')
+    why=""
+    [[ "$mbytes" -gt 25600 ]] && why="${mbytes} bytes"
+    if [[ "$mlines" -gt 200 ]]; then
+      [[ -n "$why" ]] && why="$why, ${mlines} lines" || why="${mlines} lines"
+    fi
+    if [[ -n "$why" ]]; then
+      printf "  ⚠️  %-38s %s — past the injected window; curate it\n" "${f#"$TARGET/"}" "$why"
+      mem_over=$((mem_over + 1))
+    fi
+  done < <(find "$mem_root" \( -type f -o -type l \) -name 'MEMORY.md' 2>/dev/null || true)
+  if [[ $mem_found -eq 0 ]]; then
+    echo "  · no MEMORY.md yet — agents write these as they run"
+  elif [[ $mem_over -eq 0 ]]; then
+    printf "  ✅ %d memory file(s) within the window\n" "$mem_found"
+  fi
 fi
 
 echo

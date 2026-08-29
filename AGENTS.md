@@ -91,6 +91,8 @@ Multi-step procedures. Load at the **start** of the procedure and follow it thro
 
 Each is a thin wrapper over a rule file — `verifier` loads `stack.md`, `design-reviewer` loads `design.md`, and the rest load the rule of the same name. The rule remains the single source of truth. **None of them edit code.** They report; the main session acts.
 
+All five carry `memory: project`, so each keeps a persistent `MEMORY.md` under `.claude/agent-memory/<name>/` that survives across conversations — recurring defects, past decisions and their reasoning, flaky tests. Ask an agent to check its memory before starting and to update it when done. Note that enabling memory also grants Write and Edit; each agent is instructed that its memory directory is the only thing it may write to. See `.claude/agent-memory/README.md`.
+
 **Adding a file?** Create it in the right subdirectory and add a row to the matching table above, or nothing will load it.
 
 ---

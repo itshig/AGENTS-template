@@ -57,4 +57,4 @@ Files here fall into three groups:
 grep -rn 'TODO when adopting' AGENTS.md .agents/rules/
 ```
 
-**Also yours** — anything you author into `rules/`, `personas/`, `workflows/`, or `.claude/agents/`. `--apply` leaves these alone and `--check` lists them as `? unshipped`, since it can't tell an adopter's file from one the template dropped in a later version. If one is a leftover, delete it by hand.
+**Also yours** — everything under `.claude/agent-memory/` except its `README.md`; the sub-agents write it themselves and `--apply` never touches it. Likewise anything you author into `rules/`, `personas/`, `workflows/`, or `.claude/agents/`. `--apply` leaves these alone and `--check` lists them as `? unshipped`, since it can't tell an adopter's file from one the template dropped in a later version. If one is a leftover, delete it by hand.

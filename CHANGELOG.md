@@ -4,6 +4,24 @@ All notable changes to this template. Adopting repos can use this to tell what t
 
 Format follows [Keep a Changelog](https://keepachangelog.com/) — the same standard `.agents/rules/logging.md` requires of adopters.
 
+## [0.3.0] — 2026-08-29
+
+### Added
+- **Persistent memory on all five sub-agents.** Each now carries `memory: project`, giving it a directory under `.claude/agent-memory/<name>/` that survives across conversations. `reviewer` accumulates recurring defect patterns and findings already dismissed; `debugger` keeps root causes and ruled-out hypotheses; `architect` keeps decisions and the reasoning behind rejected alternatives; `design-reviewer` keeps recurring violations and approved exceptions; `verifier` keeps flaky tests, real command durations, and preconditions that cause false failures. Each agent's prompt tells it to read `MEMORY.md` before starting and update it when done.
+- `.claude/agent-memory/README.md` — what the directory is, the injection budget, the `.gitignore` negation adopting repos need, and how to reset an agent's memory. Template-owned; `--apply` keeps it current.
+- `adopt.sh` now reports any `MEMORY.md` past the window Claude Code actually injects (first 200 lines or 25,600 bytes, whichever comes first). Same class of silent-truncation bug as the Antigravity rules cap. Unlike that check this one **does not affect the exit code** — curating memory is the agent's housekeeping, not a failed adoption.
+
+### Changed
+- `AGENTS.md` §3d, `README.md`, and `.agents/README.md` document memory, the injection budget, and the write-tool caveat below. `AGENTS.md` is 10,044 bytes, still inside the 12,000 cap.
+
+### Security
+- **Enabling `memory` grants the sub-agent Read, Write, and Edit automatically**, regardless of the `tools:` allowlist in its frontmatter. Every one of these five previously enforced "reports, never fixes" through that allowlist, which listed no write tools. That enforcement is gone. Each agent's `## Hard rules` now carries an explicit bullet naming its own memory directory as the only thing it may write to, and stating that editing a source file is out of scope even when asked. The guarantee is now a prompt instruction rather than a capability boundary — weaker, and worth knowing when you rely on these agents to judge code they cannot touch.
+- `.claude/agent-memory/` is committed by design, so agent-written notes land in diffs and get reviewed. Agents are instructed never to write credentials there. Review the diffs anyway.
+
+### Notes
+- The `memory` field depends on Claude Code's auto memory. With `autoMemoryEnabled` off or `CLAUDE_CODE_DISABLE_AUTO_MEMORY` set, agents launch with no memory instructions and no memory tools, and nothing warns you.
+- Claude Code only. Codex, Cursor, and Antigravity do not read `.claude/agents/`.
+
 ## [0.2.1] — 2026-08-28
 
 ### Changed

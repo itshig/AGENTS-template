@@ -8,7 +8,7 @@ Vendor-neutral by design: `AGENTS.md` is the source of truth, and each tool-spec
 
 | Tool | Reads | Provided by this template |
 | ---- | ----- | ------------------------- |
-| **Claude Code** | `CLAUDE.md`, `.claude/agents/` | `CLAUDE.md` with an `@AGENTS.md` import (Claude Code does not read `AGENTS.md` natively), plus five sub-agents. |
+| **Claude Code** | `CLAUDE.md`, `.claude/agents/`, `.claude/agent-memory/` | `CLAUDE.md` with an `@AGENTS.md` import (Claude Code does not read `AGENTS.md` natively), plus five sub-agents that keep persistent memory across sessions. |
 | **Codex** | `AGENTS.md` natively | `AGENTS.md`. Nothing else needed. |
 | **Antigravity** | `AGENTS.md` + `GEMINI.md` natively, and `.agents/rules/` as workspace rules | All three. `GEMINI.md` is a thin pointer so it never conflicts — Antigravity gives it precedence over `AGENTS.md` on conflicts. |
 | **Cursor** | `AGENTS.md` natively; project rules as `.mdc` files in `.cursor/rules/` | `AGENTS.md`. Nothing else needed. Cursor does not scan `.agents/rules/`, and plain `.md` files in `.cursor/rules/` are ignored — so the `description`/`globs` frontmatter on our rule files is inert for Cursor. It serves Antigravity and human readers. |
@@ -26,6 +26,7 @@ AGENTS.md                      ← entry point. Read first, every session.
   personas/                    ← role presets
   workflows/                   ← multi-step procedures
 .claude/agents/                ← sub-agent definitions (Claude Code)
+.claude/agent-memory/          ← what those sub-agents have learned (committed)
 CLAUDE.md, GEMINI.md           ← thin pointers (Codex and Cursor read AGENTS.md directly)
 adopt.sh                       ← sync / drift-check script
 ```
