@@ -13,15 +13,7 @@
 
 ### Multi-agent convention
 
-This project uses **AGENTS.md as the source of truth**. Other agent config files (`CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, etc.) should be **thin pointers** to this file:
-
-```markdown
-# CLAUDE.md
-
-See AGENTS.md.
-```
-
-Do not duplicate rules across agent files. One source, many pointers.
+`AGENTS.md` is the source of truth. Tool-specific files (`CLAUDE.md`, `GEMINI.md`) are thin pointers to it — never duplicate rules into them. Codex and Cursor read `AGENTS.md` directly and need no pointer at all.
 
 ---
 
@@ -44,12 +36,7 @@ If any of these aren't accurate, fix them before continuing.
 
 The `.agents/` directory contains three kinds of files. Load only what's relevant to the current task.
 
-```
-.agents/
-├── rules/        ← checklists and constraints for specific kinds of work
-├── personas/     ← role and voice presets to adopt
-└── workflows/    ← multi-step procedures for recurring tasks
-```
+`rules/` are constraints, `personas/` are role presets, `workflows/` are multi-step procedures, and `.claude/agents/` holds sub-agents that are dispatched rather than loaded. See `.agents/README.md` for how to add one.
 
 ### 3a. Rules (`.agents/rules/`)
 
@@ -57,19 +44,24 @@ Constraint files. Load when the trigger applies, then apply the checklist.
 
 | File                 | Load when…                                                                                                    |
 | -------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `dod.md`             | Before marking _anything_ "done" or opening a PR. **Non-negotiable gate.**                                    |
-| `security.md`        | Touching auth, sessions, payments, PII, file uploads, env vars, secrets, RBAC, or anything user-input-shaped. |
-| `architect.md`       | Proposing a new module, changing data shapes, introducing a dependency, or making a cross-cutting change.     |
-| `reviewer.md`        | After a feature is functionally complete, before commit.                                                      |
-| `test-writer.md`     | Adding tests, fixing flaky tests, or when coverage on a change is missing.                                    |
-| `debugger.md`        | When stuck on a non-obvious failure for more than ~10 minutes.                                                |
-| `docs.md`            | When public APIs, env vars, CLI flags, or user-facing surfaces change.                                        |
-| `migrations.md`      | Any change to database schema, persisted state, or breaking API contracts.                                    |
-| `dangerous-paths.md` | **Always read at session start.** Lists files/operations that require explicit human approval.                |
+| `stack.md`           | **Session start.** Commands, package manager, verification sequence. Never guess a command. |
+| `dangerous-paths.md` | **Session start.** Files and operations needing explicit human approval. |
+| `dod.md`             | Before marking anything done. **Non-negotiable gate.** |
+| `security.md`        | Auth, sessions, payments, PII, uploads, secrets, RBAC, or anything user-input-shaped. |
+| `validation.md`      | Forms, server actions, API handlers — anything parsing input it didn't create. |
+| `encryption.md`      | Encrypting data at rest, signing tokens, or handling key material. |
+| `design.md`          | Anything that renders to a screen. |
+| `architect.md`       | New module, new dependency, changed data shape, cross-cutting change. |
+| `reviewer.md`        | Feature complete, before commit. |
+| `test-writer.md`     | Adding tests, fixing flaky ones, or when a change ships uncovered. |
+| `debugger.md`        | Stuck on a non-obvious failure for ~10 minutes. |
+| `migrations.md`      | Schema, persisted state, or breaking contract changes. |
+| `logging.md`         | Finishing a unit of work — changelog and version bump. |
+| `docs.md`            | Public APIs, env vars, CLI flags, or user-facing surfaces change. |
 
 ### 3b. Personas (`.agents/personas/`)
 
-Role presets. Adopt when explicitly asked ("act as the lead engineer") or when the task obviously fits the role. A persona shapes _how_ you work; rules constrain _what_ you do. **Personas never override rules.**
+Role presets. Adopt when asked, or when the task obviously fits. A persona shapes _how_ you work; rules constrain _what_ you do. **Personas never override rules.**
 
 | File                 | Adopt when…                                                                             |
 | -------------------- | --------------------------------------------------------------------------------------- |
@@ -85,7 +77,23 @@ Multi-step procedures. Load at the **start** of the procedure and follow it thro
 | `new-feature.md`       | Starting a feature from a requirements brief, end-to-end. |
 | `incident-response.md` | Production is broken or behaving wrong.                   |
 
-**Add new files** by creating them under the appropriate subdirectory and adding a row to the matching table above. Each file should be focused — if it grows past ~200 lines, split it.
+### 3d. Sub-agents (`.claude/agents/`)
+
+**Dispatched**, not loaded — each runs in a fresh context and reports back. Use them when a task benefits from a clean context or an independent perspective, especially review and debugging, where the agent that wrote the code is the worst one to judge it.
+
+| Agent             | Dispatch when…                                                                 |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `verifier`        | Before claiming any change is done. Runs the `stack.md` gauntlet, reports pass/fail. |
+| `reviewer`        | Feature is functionally complete, before commit. Adversarial diff review.      |
+| `debugger`        | Stuck on a non-obvious failure, or a first fix attempt already failed.         |
+| `architect`       | A structural decision needs evaluating before implementation.                  |
+| `design-reviewer` | UI changed and needs auditing against the design system.                       |
+
+Each is a thin wrapper over a rule file — `verifier` loads `stack.md`, `design-reviewer` loads `design.md`, and the rest load the rule of the same name. The rule remains the single source of truth. **None of them edit code.** They report; the main session acts.
+
+All five carry `memory: project`, so each keeps a persistent `MEMORY.md` under `.claude/agent-memory/<name>/` that survives across conversations — recurring defects, past decisions and their reasoning, flaky tests. Ask an agent to check its memory before starting and to update it when done. Note that enabling memory also grants Write and Edit; each agent is instructed that its memory directory is the only thing it may write to. See `.claude/agent-memory/README.md`.
+
+**Adding a file?** Create it in the right subdirectory and add a row to the matching table above, or nothing will load it.
 
 ---
 
@@ -97,7 +105,7 @@ The default loop, regardless of which agent is driving:
 2. **Identify what to load.** Which rules apply? Is there a workflow for this? Is a persona requested?
 3. **Plan before coding.** A short plan beats a long apology. For non-trivial work, write the plan in chat or a scratch file first.
 4. **Implement in small, reviewable slices.** A 50-line change you understand beats a 500-line change you don't.
-5. **Run the relevant checks** (tests, types, lint, build) yourself before claiming done.
+5. **Run the relevant checks** using the commands in `.agents/rules/stack.md` — or dispatch the `verifier` sub-agent. Do not guess a command.
 6. **Apply `.agents/rules/dod.md`** as the final gate.
 7. **Summarize what changed and why** in the commit message and PR description.
 
@@ -117,41 +125,28 @@ These are not suggestions.
 
 ---
 
-## 6. Style and conventions
+## 6. Style, conventions, and communication
 
-- **Match the surrounding code.** If the file uses tabs, use tabs. If it uses early returns, use early returns. Consistency over personal preference.
-- **Names describe purpose, not type.** `users`, not `userArray`. `isReady`, not `readyBool`.
-- **Comments explain _why_, not _what_.** The code shows what. If the why isn't obvious, write it down.
-- **Errors are values, not surprises.** Handle them where they occur or propagate them deliberately. No silent catches.
-- **No dead code.** If it's commented out, delete it. Git remembers.
-- **Small functions, small files.** If you're scrolling, it's too big.
+**Match the surrounding code.** Tabs if it uses tabs, early returns if it uses early returns. Consistency beats personal preference. Read a few nearby files before adding another.
 
-Project-specific conventions (formatter config, lint rules, naming patterns) live in the tool configs themselves (`.prettierrc`, `eslint.config.*`, `pyproject.toml`, etc.). Trust the tools.
+The rest lives in the rule files rather than being duplicated here — this file loads every session:
 
----
+- Naming, comments, error handling, dead code, and the smells worth pausing on → `.agents/rules/reviewer.md`
+- Visual and styling conventions → `.agents/rules/design.md`
+- Formatter and lint config live in the tools themselves (`.prettierrc`, `eslint.config.*`, `pyproject.toml`). Trust them.
 
-## 7. Communication
+When reporting back: lead with the answer, show what you ran, and surface what you skipped or assumed — especially any `.agents/rules/dod.md` item you could not satisfy. "I'm not sure" is a useful signal. Ask one question at a time when blocked.
 
-When reporting back to the human:
-
-- **Lead with the answer.** Then context, then caveats.
-- **Show what you ran.** Commands, files touched, tests that passed.
-- **Surface what you skipped or assumed.** Especially if `.agents/rules/dod.md` items aren't satisfied yet.
-- **Ask one question at a time** when blocked. Multi-question dumps slow everyone down.
-- **No false confidence.** "I think" and "I'm not sure" are useful signals.
-
----
-
-## 8. When something feels off
+## 7. When something feels off
 
 Stop and say so. Better signals to escalate than to power through:
 
 - The task description doesn't match the code you're seeing.
 - Tests pass but the behavior is wrong, or vice versa.
 - A change "shouldn't" affect something but it does.
-- You're about to do something irreversible (drop, delete, force, overwrite).
-- A file in `.agents/` contradicts this file or another `.agents/` file. **This file wins**, but flag the contradiction so it gets fixed.
+- You're about to do something irreversible (drop, delete, force, overwrite, deploy).
+- A file in `.agents/` contradicts this one. **This file wins** — flag it so it gets fixed.
 
 ---
 
-_Keep this file short. If it grows past ~250 lines, something belongs in a `.agents/` subdirectory._
+_Keep this file short. **Antigravity caps each file in `.agents/rules/` at 12,000 characters** and truncates past it silently. `adopt.sh` checks this file against the same limit, since it loads every session. It ships near 9KB with section 2 unfilled, so a filled-in section 2 lands around 10KB — comfortable, but not roomy. Add project-specific rules to `.agents/rules/`, not to this file._
